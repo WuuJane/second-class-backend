@@ -28,4 +28,15 @@ public class ActivityController {
         activityService.createActivity(dto);
         return ResultVO.success(); // 返回成功，不需要返回具体数据
     }
+    // 学生报名活动
+    @PostMapping("/enroll")
+    public ResultVO<Void> enroll(@RequestParam String studentId, @RequestParam String activityId) {
+        String result = activityService.enrollActivity(studentId, activityId);
+
+        if ("success".equals(result)) {
+            return ResultVO.success(); // 报成了
+        } else {
+            return ResultVO.error(result); // 没报成，把 Service 里的错误原因返回给前端
+        }
+    }
 }

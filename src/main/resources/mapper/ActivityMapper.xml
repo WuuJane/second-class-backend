@@ -19,6 +19,8 @@
                      #{signType}, #{activityStatus}, NOW(), #{activityImg},
                      #{location}, #{capacity}, #{enrollStartTime}, #{enrollEndTime}
                  )
-
     </insert>
+    <select id="selectById" resultType="com.secondclass.entity.Activity">
+        SELECT * FROM activity WHERE activity_id = #{activityId}
+    </select>
 </mapper>

@@ -12,4 +12,6 @@ public interface ActivityService {
     // 新增的：创建活动
     void createActivity(ActivityCreateDTO dto);
 
+    // 学生报名活动，返回提示信息
+    String enrollActivity(String studentId, String activityId);
 }
