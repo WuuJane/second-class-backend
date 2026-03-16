@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.secondclass.mapper.ActivityMapper">
+
+    <select id="selectAll" resultType="com.secondclass.entity.Activity">
+        SELECT * FROM activity ORDER BY create_time DESC
+    </select>
+
+    <insert id="insert">
+        INSERT INTO activity (
+            activity_id, activity_name, department, host_unit, manager_id,
+            auditor_id, activity_hour, hour_type, start_time, end_time,
+            sign_type, activity_status, create_time, activity_img,
+            location, capacity, enroll_start_time, enroll_end_time
+        ) VALUES (
+                     #{activityId}, #{activityName}, #{department}, #{hostUnit}, #{managerId},
+                     #{auditorId}, #{activityHour}, #{hourType}, #{startTime}, #{endTime},
+                     #{signType}, #{activityStatus}, NOW(), #{activityImg},
+                     #{location}, #{capacity}, #{enrollStartTime}, #{enrollEndTime}
+                 )
+
+    </insert>
+</mapper>
