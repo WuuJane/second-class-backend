@@ -6,4 +6,16 @@
         SELECT * FROM student WHERE student_id = #{studentId}
     </select>
 
+    <update id="addHour">
+        UPDATE student
+        <set>
+            <choose>
+                <when test="hourType.contains('政治')"> politics_hour = politics_hour + #{hour}, </when>
+                <when test="hourType.contains('人文')"> humanity_hour = humanity_hour + #{hour}, </when>
+                <when test="hourType.contains('创新')"> innovation_hour = innovation_hour + #{hour}, </when>
+                <when test="hourType.contains('社会')"> social_hour = social_hour + #{hour}, </when>
+            </choose>
+        </set>
+        WHERE student_id = #{studentId}
+    </update>
 </mapper>

@@ -10,6 +10,8 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.secondclass.mapper.ActivityRecordMapper;
+import org.springframework.transaction.annotation.Transactional;
+import com.secondclass.mapper.StudentMapper;
 
 import java.util.List;
 import java.util.UUID;
@@ -78,5 +80,47 @@ public class ActivityServiceImpl implements ActivityService {
         activityRecordMapper.insert(record);
 
         return "success"; // 代表报名成功
+    }
+    @Autowired
+    private StudentMapper studentMapper;
+
+    @Override
+    @Transactional(rollbackFor = Exception.class) // 开启大招：事务管理，一旦报错，所有修改自动回滚撤销！
+    public String signActivity(String studentId, String activityId) {
+        // 1. 检查有没有报名记录
+        ActivityRecord record = activityRecordMapper.selectByActivityIdAndStudentId(activityId, studentId);
+        if (record == null) {
+            return "您尚未报名该活动，无法签到！";
+        }
+
+        // 2. 检查是否已经签到过（防止重复刷学分）
+        if (record.getSignStatus() != null && record.getSignStatus() == 1) {
+            return "您已经签到过了，请勿重复签到！";
+        }
+
+        // 3. 更新为已签到
+        activityRecordMapper.updateSignStatus(record.getId());
+
+        // 4. 查出这个活动能发多少学时，是什么类别
+        Activity activity = activityMapper.selectById(activityId);
+        if (activity != null && activity.getActivityHour() != null) {
+            // 5. 自动把学时发到学生账户里
+            studentMapper.addHour(studentId, activity.getHourType(), activity.getActivityHour());
+        }
+
+        return "success";
+    }
+    @Override
+    public void auditActivity(String activityId, boolean isPass) {
+        // 先查出活动
+        Activity activity = activityMapper.selectById(activityId);
+        if (activity == null) {
+            throw new RuntimeException("活动不存在");
+        }
+
+        // 简化的状态机：通过则进入"待报名"让学生抢，驳回则变为"活动取消"或"已驳回"
+        String newStatus = isPass ? "待报名" : "活动取消";
+
+        activityMapper.updateStatus(activityId, newStatus);
     }
 }

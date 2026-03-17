@@ -3,6 +3,7 @@ package com.secondclass.mapper;
 import com.secondclass.entity.Activity;
 import org.apache.ibatis.annotations.Mapper;
 import java.util.List;
+import org.apache.ibatis.annotations.Param;
 
 @Mapper
 public interface ActivityMapper {
@@ -11,4 +12,6 @@ public interface ActivityMapper {
     // 根据 ID 查询单条活动
     Activity selectById(String activityId);
     int insert(Activity activity);
+    // 更新活动状态
+    int updateStatus(@Param("activityId") String activityId, @Param("status") String status);
 }

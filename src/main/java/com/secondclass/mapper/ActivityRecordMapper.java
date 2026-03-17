@@ -14,4 +14,10 @@ public interface ActivityRecordMapper {
 
     // 检查这个学生是不是已经报过这个活动了 (查出来大于0就说明报过了)
     int checkEnrolled(@Param("activityId") String activityId, @Param("studentId") String studentId);
+
+    // 查询学生在这场活动的报名记录
+    ActivityRecord selectByActivityIdAndStudentId(@Param("activityId") String activityId, @Param("studentId") String studentId);
+
+    // 更新签到状态和签到时间
+    int updateSignStatus(@Param("id") Integer id);
 }

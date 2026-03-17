@@ -16,4 +16,14 @@
         WHERE activity_id = #{activityId} AND student_id = #{studentId}
     </select>
 
+    <select id="selectByActivityIdAndStudentId" resultType="com.secondclass.entity.ActivityRecord">
+        SELECT * FROM activity_record
+        WHERE activity_id = #{activityId} AND student_id = #{studentId}
+    </select>
+
+    <update id="updateSignStatus">
+        UPDATE activity_record
+        SET sign_status = 1, sign_time = NOW()
+        WHERE id = #{id}
+    </update>
 </mapper>

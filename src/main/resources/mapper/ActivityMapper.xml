@@ -23,4 +23,10 @@
     <select id="selectById" resultType="com.secondclass.entity.Activity">
         SELECT * FROM activity WHERE activity_id = #{activityId}
     </select>
+
+    <update id="updateStatus">
+        UPDATE activity
+        SET activity_status = #{status}
+        WHERE activity_id = #{activityId}
+    </update>
 </mapper>
