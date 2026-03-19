@@ -9,4 +9,5 @@ public class TUser {
     private String role;         // 角色：管理员 / 负责人 / 审核人
     private String department;   // 所属院系
     private Integer status;      // 状态：0-禁用，1-启用
+    private String password;
 }

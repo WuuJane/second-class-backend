@@ -12,5 +12,14 @@ public class Student {
     private BigDecimal politicsHour;    // 政治理论素养学时
     private BigDecimal humanityHour;    // 人文素养与国际视野学时
     private BigDecimal innovationHour;  // 创新训练与创业实践学时
-    private BigDecimal socialHour;      // 社会责任感与家国情怀学时
+    private BigDecimal socialHour;
+    private String password;// 社会责任感与家国情怀学时
+    // 手动添加 get 和 set 方法
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
 }
