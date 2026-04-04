@@ -32,7 +32,6 @@ public class ActivityController {
     @PostMapping("/enroll")
     public ResultVO<Void> enroll(@RequestParam String studentId, @RequestParam String activityId) {
         String result = activityService.enrollActivity(studentId, activityId);
-
         if ("success".equals(result)) {
             return ResultVO.success();
         } else {
@@ -43,7 +42,6 @@ public class ActivityController {
     @PostMapping("/sign")
     public ResultVO<Void> sign(@RequestParam String studentId, @RequestParam String activityId) {
         String result = activityService.signActivity(studentId, activityId);
-
         if ("success".equals(result)) {
             return ResultVO.success();
         } else {
@@ -61,17 +59,38 @@ public class ActivityController {
         }
     }
 
-    // 🌟 新增功能：负责人专用，查询我发布的活动
     @GetMapping("/my-manage")
     public ResultVO<List<Activity>> getMyManageActivities(@RequestParam String managerId) {
         List<Activity> list = activityService.getMyManageActivities(managerId);
         return ResultVO.success(list);
     }
 
-    // 🌟 新增功能：负责人专用，查看报名名单（带学生详细信息）
     @GetMapping("/{activityId}/students")
     public ResultVO<List<Map<String, Object>>> getActivityEnrollList(@PathVariable String activityId) {
         List<Map<String, Object>> list = activityService.getActivityEnrollList(activityId);
         return ResultVO.success(list);
+    }
+
+    //负责人撤销活动接口
+    @PostMapping("/cancel")
+    public ResultVO<Void> cancelActivity(@RequestParam String activityId, @RequestParam String managerId) {
+        try {
+            activityService.cancelActivity(activityId, managerId);
+            return ResultVO.success();
+        } catch (Exception e) {
+            return ResultVO.error(e.getMessage());
+        }
+    }
+
+    // 负责人后台手动替学生签到
+    // 逻辑和学生扫码一模一样，我们单独拉一个接口是为了前端权限区分
+    @PostMapping("/manual-sign")
+    public ResultVO<Void> manualSign(@RequestParam String studentId, @RequestParam String activityId) {
+        String result = activityService.signActivity(studentId, activityId);
+        if ("success".equals(result)) {
+            return ResultVO.success(); // 签到成功且自动发学时了
+        } else {
+            return ResultVO.error(result);
+        }
     }
 }

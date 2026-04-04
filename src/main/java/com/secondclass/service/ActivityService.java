@@ -22,9 +22,12 @@ public interface ActivityService {
     // 审核活动（isPass: true代表通过，false代表驳回）
     void auditActivity(String activityId, boolean isPass);
 
-    // 🌟 新增功能：获取负责人自己发布的活动
+    // 获取负责人自己发布的活动
     List<Activity> getMyManageActivities(String managerId);
 
-    // 🌟 新增功能：获取某个活动的报名名单明细
+    // 获取某个活动的报名名单明细
     List<Map<String, Object>> getActivityEnrollList(String activityId);
+
+    //负责人撤销活动
+    void cancelActivity(String activityId, String managerId);
 }

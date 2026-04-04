@@ -61,13 +61,14 @@ public class ActivityServiceImpl implements ActivityService {
             if (org != null && org.getAuditorOrgId() != null) {
                 activity.setAuditorOrgId(org.getAuditorOrgId());
             } else {
-                throw new RuntimeException("发生活动失败：您所在的组织未绑定上级审核单位！");
+                throw new RuntimeException("发布活动失败：您所在的组织未绑定上级审核单位！");
             }
         } else {
-            throw new RuntimeException("发生活动失败：无法获取当前发布者的组织归属信息！");
+            throw new RuntimeException("发布活动失败：无法获取当前发布者的组织归属信息！");
         }
 
-        activity.setActivityStatus("等待审核");
+        // 🌟 修改点 1：尊重原版设计，发布后的初始状态设为"等待初审"
+        activity.setActivityStatus("等待初审");
         activityMapper.insert(activity);
     }
 
@@ -98,8 +99,8 @@ public class ActivityServiceImpl implements ActivityService {
     @Transactional(rollbackFor = Exception.class)
     public String signActivity(String studentId, String activityId) {
         ActivityRecord record = activityRecordMapper.selectByActivityIdAndStudentId(activityId, studentId);
-        if (record == null) return "您尚未报名该活动，无法签到！";
-        if (record.getSignStatus() != null && record.getSignStatus() == 1) return "您已经签到过了，请勿重复签到！";
+        if (record == null) return "该学生尚未报名该活动，无法签到！";
+        if (record.getSignStatus() != null && record.getSignStatus() == 1) return "该学生已经签到过了，请勿重复操作！";
 
         activityRecordMapper.updateSignStatus(record.getId());
 
@@ -116,19 +117,39 @@ public class ActivityServiceImpl implements ActivityService {
         Activity activity = activityMapper.selectById(activityId);
         if (activity == null) throw new RuntimeException("活动不存在");
 
-        String newStatus = isPass ? "待报名" : "活动取消";
+        // 注意：这里的状态流转我们后续开发"审核老师"功能时再做细化（区分初审通过和终审通过）
+        String newStatus = isPass ? "待报名" : "被驳回";
         activityMapper.updateStatus(activityId, newStatus);
     }
 
-    // 🌟 新增功能实现：获取负责人自己发布的活动
     @Override
     public List<Activity> getMyManageActivities(String managerId) {
         return activityMapper.selectByManagerId(managerId);
     }
 
-    // 🌟 新增功能实现：获取某个活动的报名名单明细
     @Override
     public List<Map<String, Object>> getActivityEnrollList(String activityId) {
         return activityRecordMapper.selectStudentDetailsByActivityId(activityId);
+    }
+
+    @Override
+    public void cancelActivity(String activityId, String managerId) {
+        Activity activity = activityMapper.selectById(activityId);
+        if (activity == null) {
+            throw new RuntimeException("活动不存在");
+        }
+
+        if (!activity.getManagerId().equals(managerId)) {
+            throw new RuntimeException("越权操作：您无权撤销其他负责人的活动！");
+        }
+
+        // 🌟 修改点 2：只要活动还在审核阶段（初审或终审）或者被驳回了，负责人都可以撤销
+        if (!"等待初审".equals(activity.getActivityStatus()) &&
+                !"待终审".equals(activity.getActivityStatus()) &&
+                !"被驳回".equals(activity.getActivityStatus())) {
+            throw new RuntimeException("当前活动状态不允许撤销（可能已通过审核并开始报名）！");
+        }
+
+        activityMapper.updateStatus(activityId, "已撤销");
     }
 }
