@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/activity")
@@ -22,35 +23,34 @@ public class ActivityController {
         return ResultVO.success(list);
     }
 
-    // 新增的创建活动接口
     @PostMapping("/create")
     public ResultVO<Void> createActivity(@RequestBody ActivityCreateDTO dto) {
         activityService.createActivity(dto);
-        return ResultVO.success(); // 返回成功，不需要返回具体数据
+        return ResultVO.success();
     }
-    // 学生报名活动
+
     @PostMapping("/enroll")
     public ResultVO<Void> enroll(@RequestParam String studentId, @RequestParam String activityId) {
         String result = activityService.enrollActivity(studentId, activityId);
 
         if ("success".equals(result)) {
-            return ResultVO.success(); // 报成了
+            return ResultVO.success();
         } else {
-            return ResultVO.error(result); // 没报成，把 Service 里的错误原因返回给前端
+            return ResultVO.error(result);
         }
     }
-    // 学生扫描签到码进行签到
+
     @PostMapping("/sign")
     public ResultVO<Void> sign(@RequestParam String studentId, @RequestParam String activityId) {
         String result = activityService.signActivity(studentId, activityId);
 
         if ("success".equals(result)) {
-            return ResultVO.success(); // 签到成功并已发放学时
+            return ResultVO.success();
         } else {
-            return ResultVO.error(result); // 返回拦截原因（比如：没报名、已签到过）
+            return ResultVO.error(result);
         }
     }
-    // 管理员审核活动
+
     @PostMapping("/audit")
     public ResultVO<Void> audit(@RequestParam String activityId, @RequestParam boolean isPass) {
         try {
@@ -59,5 +59,19 @@ public class ActivityController {
         } catch (Exception e) {
             return ResultVO.error(e.getMessage());
         }
+    }
+
+    // 🌟 新增功能：负责人专用，查询我发布的活动
+    @GetMapping("/my-manage")
+    public ResultVO<List<Activity>> getMyManageActivities(@RequestParam String managerId) {
+        List<Activity> list = activityService.getMyManageActivities(managerId);
+        return ResultVO.success(list);
+    }
+
+    // 🌟 新增功能：负责人专用，查看报名名单（带学生详细信息）
+    @GetMapping("/{activityId}/students")
+    public ResultVO<List<Map<String, Object>>> getActivityEnrollList(@PathVariable String activityId) {
+        List<Map<String, Object>> list = activityService.getActivityEnrollList(activityId);
+        return ResultVO.success(list);
     }
 }

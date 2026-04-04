@@ -3,6 +3,8 @@ package com.secondclass.mapper;
 import com.secondclass.entity.ActivityRecord;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface ActivityRecordMapper {
@@ -20,4 +22,7 @@ public interface ActivityRecordMapper {
 
     // 更新签到状态和签到时间
     int updateSignStatus(@Param("id") Integer id);
+
+    // 🌟 新增功能：多表联查，查询某个活动的所有报名学生详细信息
+    List<Map<String, Object>> selectStudentDetailsByActivityId(String activityId);
 }

@@ -2,6 +2,7 @@ package com.secondclass.service.impl;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import com.secondclass.entity.ActivityRecord;
@@ -32,9 +33,9 @@ public class ActivityServiceImpl implements ActivityService {
     @Autowired
     private StudentMapper studentMapper;
 
-    // 🌟 注入我们需要的新工具
     @Autowired
     private UserService userService;
+
     @Autowired
     private SysOrganizationMapper sysOrganizationMapper;
 
@@ -52,17 +53,12 @@ public class ActivityServiceImpl implements ActivityService {
         String uuid = UUID.randomUUID().toString().replace("-", "");
         activity.setActivityId(uuid);
 
-        // 1. 根据前端传来的负责人ID，查出他具体属于哪个社团/组织
         TUser manager = userService.getUserById(activity.getManagerId());
 
         if (manager != null && manager.getOrgId() != null) {
-            // 记下：这个活动是这个组织发起的
             activity.setManagerOrgId(manager.getOrgId());
-
-            // 2. 去 sys_organization 表查这个社团归谁管（找大哥）
             SysOrganization org = sysOrganizationMapper.selectById(manager.getOrgId());
             if (org != null && org.getAuditorOrgId() != null) {
-                // 3. 动态绑定！把大哥的 ID 强行塞进活动的审核字段里
                 activity.setAuditorOrgId(org.getAuditorOrgId());
             } else {
                 throw new RuntimeException("发生活动失败：您所在的组织未绑定上级审核单位！");
@@ -71,16 +67,12 @@ public class ActivityServiceImpl implements ActivityService {
             throw new RuntimeException("发生活动失败：无法获取当前发布者的组织归属信息！");
         }
 
-        // 强制初始化状态，防止前端乱传
         activity.setActivityStatus("等待审核");
-        // ==========================================
-
         activityMapper.insert(activity);
     }
 
     @Override
     public String enrollActivity(String studentId, String activityId) {
-        // ... (保持你原有的逻辑不变)
         Activity activity = activityMapper.selectById(activityId);
         if (activity == null) return "活动不存在";
 
@@ -105,7 +97,6 @@ public class ActivityServiceImpl implements ActivityService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public String signActivity(String studentId, String activityId) {
-        // ... (保持你原有的逻辑不变)
         ActivityRecord record = activityRecordMapper.selectByActivityIdAndStudentId(activityId, studentId);
         if (record == null) return "您尚未报名该活动，无法签到！";
         if (record.getSignStatus() != null && record.getSignStatus() == 1) return "您已经签到过了，请勿重复签到！";
@@ -127,5 +118,17 @@ public class ActivityServiceImpl implements ActivityService {
 
         String newStatus = isPass ? "待报名" : "活动取消";
         activityMapper.updateStatus(activityId, newStatus);
+    }
+
+    // 🌟 新增功能实现：获取负责人自己发布的活动
+    @Override
+    public List<Activity> getMyManageActivities(String managerId) {
+        return activityMapper.selectByManagerId(managerId);
+    }
+
+    // 🌟 新增功能实现：获取某个活动的报名名单明细
+    @Override
+    public List<Map<String, Object>> getActivityEnrollList(String activityId) {
+        return activityRecordMapper.selectStudentDetailsByActivityId(activityId);
     }
 }

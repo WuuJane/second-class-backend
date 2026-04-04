@@ -26,4 +26,18 @@
         SET sign_status = 1, sign_time = NOW()
         WHERE id = #{id}
     </update>
+
+    <select id="selectStudentDetailsByActivityId" resultType="java.util.Map">
+        SELECT
+            ar.enroll_time AS enrollTime,
+            ar.sign_status AS signStatus,
+            ar.sign_time AS signTime,
+            s.student_id AS studentId,
+            s.student_name AS studentName,
+            s.student_department AS studentDepartment
+        FROM activity_record ar
+                 LEFT JOIN student s ON ar.student_id = s.student_id
+        WHERE ar.activity_id = #{activityId}
+        ORDER BY ar.enroll_time ASC
+    </select>
 </mapper>

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-
 <mapper namespace="com.secondclass.mapper.ActivityMapper">
 
     <select id="selectAll" resultType="com.secondclass.entity.Activity">
@@ -32,4 +31,10 @@
         SET activity_status = #{status}
         WHERE activity_id = #{activityId}
     </update>
+
+    <select id="selectByManagerId" resultType="com.secondclass.entity.Activity">
+        SELECT * FROM activity
+        WHERE manager_id = #{managerId}
+        ORDER BY create_time DESC
+    </select>
 </mapper>

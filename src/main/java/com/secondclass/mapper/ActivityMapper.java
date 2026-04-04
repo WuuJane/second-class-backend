@@ -14,4 +14,7 @@ public interface ActivityMapper {
     int insert(Activity activity);
     // 更新活动状态
     int updateStatus(@Param("activityId") String activityId, @Param("status") String status);
+
+    // 🌟 新增功能：查询某个负责人发布的所有活动
+    List<Activity> selectByManagerId(String managerId);
 }
