@@ -12,14 +12,17 @@
             activity_id, activity_name, department, host_unit, manager_id,
             auditor_id, activity_hour, hour_type, start_time, end_time,
             sign_type, activity_status, create_time, activity_img,
-            location, capacity, enroll_start_time, enroll_end_time
+            location, capacity, enroll_start_time, enroll_end_time,
+            manager_org_id, auditor_org_id
         ) VALUES (
                      #{activityId}, #{activityName}, #{department}, #{hostUnit}, #{managerId},
                      #{auditorId}, #{activityHour}, #{hourType}, #{startTime}, #{endTime},
                      #{signType}, #{activityStatus}, NOW(), #{activityImg},
-                     #{location}, #{capacity}, #{enrollStartTime}, #{enrollEndTime}
+                     #{location}, #{capacity}, #{enrollStartTime}, #{enrollEndTime},
+                     #{managerOrgId}, #{auditorOrgId}
                  )
     </insert>
+
     <select id="selectById" resultType="com.secondclass.entity.Activity">
         SELECT * FROM activity WHERE activity_id = #{activityId}
     </select>

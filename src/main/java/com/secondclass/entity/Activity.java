@@ -22,11 +22,11 @@ public class Activity {
     private String signType;         // 签到方式
     private String activityStatus;   // 活动状态
     private LocalDateTime createTime;// 创建时间
-
-    // 后来补充的字段
     private String activityImg;      // 活动海报
     private String location;         // 活动地点
     private Integer capacity;        // 人数限制
     private LocalDateTime enrollStartTime; // 报名开始时间
     private LocalDateTime enrollEndTime;   // 报名结束时间
+    private Integer managerOrgId;    // 发起方的组织ID（如：教育学院学生会）
+    private Integer auditorOrgId;    // 动态绑定的审核组织ID（如：教育学院团委）
 }

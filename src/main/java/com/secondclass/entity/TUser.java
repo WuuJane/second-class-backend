@@ -10,4 +10,5 @@ public class TUser {
     private String department;   // 所属院系
     private Integer status;      // 状态：0-禁用，1-启用
     private String password;
+    private Integer orgId;       // 归属组织机构ID
 }
