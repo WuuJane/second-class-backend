@@ -181,4 +181,29 @@ public class ActivityServiceImpl implements ActivityService {
         // 调用 Mapper 层专门查询已签到学生的方法
         return activityRecordMapper.selectSignedInStudentsByActivityId(activityId);
     }
+    /**
+     * 负责人：手动结束活动（相当于发起完结申请）
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void finishActivity(String activityId, String managerId) {
+        Activity activity = activityMapper.selectById(activityId);
+        if (activity == null) {
+            throw new RuntimeException("活动不存在！");
+        }
+
+        // 权限校验
+        if (!activity.getManagerId().equals(managerId)) {
+            throw new RuntimeException("越权操作：您无权结束其他人的活动！");
+        }
+
+        // 状态校验：只有“活动进行中”的活动才可以结束
+        // (如果你允许到了时间不管开没开始都能结束，可以把逻辑放宽)
+        if (!"活动进行中".equals(activity.getActivityStatus())) {
+            throw new RuntimeException("当前活动状态不是“活动进行中”，无法结束！");
+        }
+
+        // 将状态更为“活动结束”，等待审核人完结并自动发学时
+        activityMapper.updateStatus(activityId, "活动结束");
+    }
 }

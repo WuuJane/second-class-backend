@@ -93,6 +93,7 @@ public class ActivityController {
             return ResultVO.error(result);
         }
     }
+
     @PostMapping("/resubmit")
     public ResultVO<Void> resubmitActivity(@RequestBody Activity activity) {
         // 基本参数校验：修改必须带上活动 ID
@@ -107,9 +108,23 @@ public class ActivityController {
             return ResultVO.error(e.getMessage());
         }
     }
+
     @GetMapping("/{activityId}/attendance")
     public ResultVO<List<Map<String, Object>>> getActualAttendanceList(@PathVariable String activityId) {
         List<Map<String, Object>> list = activityService.getActualAttendanceList(activityId);
         return ResultVO.success(list);
+    }
+
+    /**
+     * 负责人手动结束活动（发起完结审核）
+     */
+    @PostMapping("/finish")
+    public ResultVO<Void> finishActivity(@RequestParam String activityId, @RequestParam String managerId) {
+        try {
+            activityService.finishActivity(activityId, managerId);
+            return ResultVO.success();
+        } catch (RuntimeException e) {
+            return ResultVO.error(e.getMessage());
+        }
     }
 }
