@@ -176,4 +176,9 @@ public class ActivityServiceImpl implements ActivityService {
         // 5. 执行更新
         activityMapper.updateActivity(activity);
     }
+    @Override
+    public List<Map<String, Object>> getActualAttendanceList(String activityId) {
+        // 调用 Mapper 层专门查询已签到学生的方法
+        return activityRecordMapper.selectSignedInStudentsByActivityId(activityId);
+    }
 }

@@ -107,4 +107,9 @@ public class ActivityController {
             return ResultVO.error(e.getMessage());
         }
     }
+    @GetMapping("/{activityId}/attendance")
+    public ResultVO<List<Map<String, Object>>> getActualAttendanceList(@PathVariable String activityId) {
+        List<Map<String, Object>> list = activityService.getActualAttendanceList(activityId);
+        return ResultVO.success(list);
+    }
 }
