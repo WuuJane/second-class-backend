@@ -19,4 +19,6 @@ public interface ActivityMapper {
     List<Activity> selectByManagerId(String managerId);
 
     int updateActivity(Activity activity);
+    // 自动更新为进行中（活动时间已到）
+    int updateStatusToInProgress();
 }

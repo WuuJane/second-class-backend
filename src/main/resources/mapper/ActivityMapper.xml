@@ -82,5 +82,10 @@
         </set>
         WHERE activity_id = #{activityId}
     </update>
-
+    <update id="updateStatusToInProgress">
+        UPDATE activity
+        SET activity_status = '活动进行中'
+        WHERE activity_status = '待报名'
+          AND start_time &lt;= NOW()
+    </update>
 </mapper>
