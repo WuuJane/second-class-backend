@@ -17,4 +17,6 @@ public interface ActivityMapper {
 
     // 🌟 新增功能：查询某个负责人发布的所有活动
     List<Activity> selectByManagerId(String managerId);
+
+    int updateActivity(Activity activity);
 }

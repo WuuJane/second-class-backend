@@ -20,6 +20,8 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.stereotype.Service;
 
 @Service
 public class ActivityServiceImpl implements ActivityService {
@@ -151,5 +153,27 @@ public class ActivityServiceImpl implements ActivityService {
         }
 
         activityMapper.updateStatus(activityId, "已撤销");
+    }
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void editAndResubmit(Activity activity) {
+        // 1. 查出数据库里现有的活动记录
+        Activity existingActivity = activityMapper.selectById(activity.getActivityId());
+
+        // 2. 防御性编程：判断活动是否存在
+        if (existingActivity == null) {
+            throw new RuntimeException("抱歉，未找到该活动记录！");
+        }
+
+        // 3. 核心状态校验：如果不是“被驳回”状态，绝对不允许修改
+        if (!"被驳回".equals(existingActivity.getActivityStatus())) {
+            throw new RuntimeException("非法操作：只有处于“被驳回”状态的活动才可以修改和重新提交！");
+        }
+
+        // 4. 重置状态为“等待初审” (进入下一轮审批)
+        activity.setActivityStatus("等待初审");
+
+        // 5. 执行更新
+        activityMapper.updateActivity(activity);
     }
 }

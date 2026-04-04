@@ -93,4 +93,18 @@ public class ActivityController {
             return ResultVO.error(result);
         }
     }
+    @PostMapping("/resubmit")
+    public ResultVO<Void> resubmitActivity(@RequestBody Activity activity) {
+        // 基本参数校验：修改必须带上活动 ID
+        if (activity.getActivityId() == null) {
+            return ResultVO.error("活动ID不能为空");
+        }
+
+        try {
+            activityService.editAndResubmit(activity);
+            return ResultVO.success();
+        } catch (RuntimeException e) {
+            return ResultVO.error(e.getMessage());
+        }
+    }
 }

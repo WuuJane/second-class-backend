@@ -37,4 +37,50 @@
         WHERE manager_id = #{managerId}
         ORDER BY create_time DESC
     </select>
+    <update id="updateActivity" parameterType="com.secondclass.entity.Activity">
+        UPDATE activity
+        <set>
+            <if test="activityName != null and activityName != ''">
+                activity_name = #{activityName},
+            </if>
+            <if test="department != null and department != ''">
+                department = #{department},
+            </if>
+            <if test="hostUnit != null and hostUnit != ''">
+                host_unit = #{hostUnit},
+            </if>
+            <if test="activityHour != null">
+                activity_hour = #{activityHour},
+            </if>
+            <if test="hourType != null and hourType != ''">
+                hour_type = #{hourType},
+            </if>
+            <if test="location != null and location != ''">
+                location = #{location},
+            </if>
+            <if test="startTime != null">
+                start_time = #{startTime},
+            </if>
+            <if test="endTime != null">
+                end_time = #{endTime},
+            </if>
+            <if test="enrollStartTime != null">
+                enroll_start_time = #{enrollStartTime},
+            </if>
+            <if test="enrollEndTime != null">
+                enroll_end_time = #{enrollEndTime},
+            </if>
+            <if test="capacity != null">
+                capacity = #{capacity},
+            </if>
+            <if test="activityImg != null and activityImg != ''">
+                activity_img = #{activityImg},
+            </if>
+            <if test="activityStatus != null and activityStatus != ''">
+                activity_status = #{activityStatus},
+            </if>
+        </set>
+        WHERE activity_id = #{activityId}
+    </update>
+
 </mapper>

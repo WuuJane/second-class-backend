@@ -30,4 +30,6 @@ public interface ActivityService {
 
     //负责人撤销活动
     void cancelActivity(String activityId, String managerId);
+
+    void editAndResubmit(Activity activity);
 }
