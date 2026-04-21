@@ -33,4 +33,7 @@ public interface ActivityMapper {
 
     //获取学生已签到的历史活动记录
     List<Activity> getHistoryActivities(String studentId);
+
+    //悲观锁查询：查询活动信息并锁定该行数据，防止并发修改
+    Activity selectByIdForUpdate(String activityId);
 }

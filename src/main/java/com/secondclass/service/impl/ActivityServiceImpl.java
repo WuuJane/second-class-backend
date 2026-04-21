@@ -74,28 +74,68 @@ public class ActivityServiceImpl implements ActivityService {
         activityMapper.insert(activity);
     }
 
-    @Override
-    public String enrollActivity(String studentId, String activityId) {
-        Activity activity = activityMapper.selectById(activityId);
-        if (activity == null) return "活动不存在";
+//    @Override
+//    public String enrollActivity(String studentId, String activityId) {
+//        Activity activity = activityMapper.selectById(activityId);
+//        if (activity == null) return "活动不存在";
+//
+//        LocalDateTime now = LocalDateTime.now();
+//        if (now.isBefore(activity.getEnrollStartTime())) return "报名还未开始！";
+//        if (now.isAfter(activity.getEnrollEndTime())) return "报名已经结束！";
+//
+//        int enrolledCount = activityRecordMapper.countByActivityId(activityId);
+//        if (enrolledCount >= activity.getCapacity()) return "手慢了，活动名额已满！";
+//
+//        int isEnrolled = activityRecordMapper.checkEnrolled(activityId, studentId);
+//        if (isEnrolled > 0) return "您已经报名过该活动，请勿重复报名！";
+//
+//        ActivityRecord record = new ActivityRecord();
+//        record.setActivityId(activityId);
+//        record.setStudentId(studentId);
+//        activityRecordMapper.insert(record);
+//
+//        return "success";
+//    }
 
-        LocalDateTime now = LocalDateTime.now();
-        if (now.isBefore(activity.getEnrollStartTime())) return "报名还未开始！";
-        if (now.isAfter(activity.getEnrollEndTime())) return "报名已经结束！";
-
-        int enrolledCount = activityRecordMapper.countByActivityId(activityId);
-        if (enrolledCount >= activity.getCapacity()) return "手慢了，活动名额已满！";
-
-        int isEnrolled = activityRecordMapper.checkEnrolled(activityId, studentId);
-        if (isEnrolled > 0) return "您已经报名过该活动，请勿重复报名！";
-
-        ActivityRecord record = new ActivityRecord();
-        record.setActivityId(activityId);
-        record.setStudentId(studentId);
-        activityRecordMapper.insert(record);
-
-        return "success";
+@Override
+@Transactional(rollbackFor = Exception.class) // 🌟 必须加事务，保证排队和报错回滚
+public String enrollActivity(String studentId, String activityId) {
+    // 🌟 1. 改用加了悲观锁的查询方法，谁先查到谁锁住这一行！
+    Activity activity = activityMapper.selectByIdForUpdate(activityId);
+    if (activity == null) {
+        throw new RuntimeException("活动不存在");
     }
+
+    // 2. 时间校验（防作弊）
+    LocalDateTime now = LocalDateTime.now();
+    if (now.isBefore(activity.getEnrollStartTime())) {
+        throw new RuntimeException("报名还未开始！");
+    }
+    if (now.isAfter(activity.getEnrollEndTime())) {
+        throw new RuntimeException("报名已经结束！");
+    }
+
+    // 3. 查重校验：不能重复报名
+    int isEnrolled = activityRecordMapper.checkEnrolled(activityId, studentId);
+    if (isEnrolled > 0) {
+        throw new RuntimeException("您已经报名过该活动，请勿重复报名！");
+    }
+
+    // 4. 并发核心校验：实时统计已报名人数
+    int enrolledCount = activityRecordMapper.countByActivityId(activityId);
+    if (enrolledCount >= activity.getCapacity()) {
+        throw new RuntimeException("手慢了，活动名额已满！");
+    }
+
+    // 5. 插入报名记录
+    ActivityRecord record = new ActivityRecord();
+    record.setActivityId(activityId);
+    record.setStudentId(studentId);
+    activityRecordMapper.insert(record);
+
+    return "success";
+}
+
 
     @Override
     @Transactional(rollbackFor = Exception.class)

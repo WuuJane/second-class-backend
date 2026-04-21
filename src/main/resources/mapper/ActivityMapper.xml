@@ -114,4 +114,8 @@
           AND ar.sign_status = 1
         ORDER BY ar.sign_time DESC
     </select>
+
+    <select id="selectByIdForUpdate" resultType="com.secondclass.entity.Activity">
+        SELECT * FROM activity WHERE activity_id = #{activityId} FOR UPDATE
+    </select>
 </mapper>
