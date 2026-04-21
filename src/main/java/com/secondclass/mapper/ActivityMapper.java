@@ -21,4 +21,6 @@ public interface ActivityMapper {
     int updateActivity(Activity activity);
     // 自动更新为进行中（活动时间已到）
     int updateStatusToInProgress();
+
+    Activity getActivityById(String activityId);
 }

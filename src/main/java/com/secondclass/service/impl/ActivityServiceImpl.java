@@ -206,4 +206,10 @@ public class ActivityServiceImpl implements ActivityService {
         // 将状态更为“活动结束”，等待审核人完结并自动发学时
         activityMapper.updateStatus(activityId, "活动结束");
     }
+
+    @Override
+    public Activity getActivityById(String activityId) {
+        // 调用 Mapper 层，去数据库里查数据
+        return activityMapper.getActivityById(activityId);
+    }
 }

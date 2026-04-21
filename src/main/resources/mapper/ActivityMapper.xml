@@ -88,4 +88,9 @@
         WHERE activity_status = '待报名'
           AND start_time &lt;= NOW()
     </update>
+
+
+    <select id="getActivityById" resultType="com.secondclass.entity.Activity">
+        SELECT * FROM activity WHERE activity_id = #{activityId}
+    </select>
 </mapper>

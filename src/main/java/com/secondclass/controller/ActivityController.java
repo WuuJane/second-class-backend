@@ -127,4 +127,36 @@ public class ActivityController {
             return ResultVO.error(e.getMessage());
         }
     }
+
+
+    /**
+     * 【学生端】获取活动详情
+     */
+    @GetMapping("/detail/{activityId}")
+    public ResultVO<Activity> getActivityDetail(@PathVariable String activityId) {
+        Activity activity = activityService.getActivityById(activityId);
+        return ResultVO.success(activity);
+    }
+
+//    /**
+//     * 【学生端】获取我报名的活动列表 (我的活动模块)
+//     */
+//    @GetMapping("/my-enroll")
+//    public ResultVO<List<Activity>> getMyEnrolledActivities(@RequestParam String studentId) {
+//        List<Activity> list = activityService.getMyEnrolledActivities(studentId);
+//        return ResultVO.success(list);
+//    }
+//
+//    /**
+//     * 【学生端】取消报名
+//     */
+//    @PostMapping("/cancel-enroll")
+//    public ResultVO<Void> cancelEnroll(@RequestParam String studentId, @RequestParam String activityId) {
+//        try {
+//            activityService.cancelEnroll(studentId, activityId);
+//            return ResultVO.success();
+//        } catch (RuntimeException e) {
+//            return ResultVO.error(e.getMessage()); // 如果活动已经开始等原因不能取消，抛出异常返回给前端
+//        }
+//    }
 }

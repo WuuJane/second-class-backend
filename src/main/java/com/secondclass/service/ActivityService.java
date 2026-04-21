@@ -34,4 +34,9 @@ public interface ActivityService {
     void editAndResubmit(Activity activity);
     List<Map<String, Object>> getActualAttendanceList(String activityId);
     void finishActivity(String activityId, String managerId);
+
+    /**
+     * 根据活动ID获取活动详情
+     */
+    Activity getActivityById(String activityId);
 }
