@@ -15,6 +15,7 @@ public class StudentController {
 
     /**
      * 获取学生个人信息与学时进度 (我的学时模块)
+     * 查个人学时进度
      */
     @GetMapping("/info")
     public ResultVO<Student> getStudentInfo(@RequestParam String studentId) {
