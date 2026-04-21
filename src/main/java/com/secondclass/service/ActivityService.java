@@ -43,4 +43,7 @@ public interface ActivityService {
 
     //学生取消报名
     void cancelEnroll(String studentId, String activityId);
+
+    // 获取学生已签到的历史活动记录
+    List<Activity> getHistoryActivities(String studentId);
 }

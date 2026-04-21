@@ -159,4 +159,14 @@ public class ActivityController {
             return ResultVO.error(e.getMessage()); // 如果活动已经开始等原因不能取消，抛出异常返回给前端
         }
     }
+
+
+    /**
+     * 【学生端】获取已获学时的历史活动 (我的学时模块)
+     */
+    @GetMapping("/history")
+    public ResultVO<List<Activity>> getHistoryActivities(@RequestParam String studentId) {
+        List<Activity> list = activityService.getHistoryActivities(studentId);
+        return ResultVO.success(list);
+    }
 }

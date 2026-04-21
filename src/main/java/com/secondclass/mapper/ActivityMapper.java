@@ -30,4 +30,7 @@ public interface ActivityMapper {
 
     //取消报名
     int deleteEnrollRecord(@Param("studentId") String studentId, @Param("activityId") String activityId);
+
+    //获取学生已签到的历史活动记录
+    List<Activity> getHistoryActivities(String studentId);
 }

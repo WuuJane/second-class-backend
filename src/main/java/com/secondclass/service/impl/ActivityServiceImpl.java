@@ -241,4 +241,9 @@ public class ActivityServiceImpl implements ActivityService {
             throw new RuntimeException("未找到你的报名记录，可能已经取消过了");
         }
     }
+
+    @Override
+    public List<Activity> getHistoryActivities(String studentId) {
+        return activityMapper.getHistoryActivities(studentId);
+    }
 }
