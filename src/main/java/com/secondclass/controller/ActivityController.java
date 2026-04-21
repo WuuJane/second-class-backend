@@ -17,11 +17,6 @@ public class ActivityController {
     @Autowired
     private ActivityService activityService;
 
-    @GetMapping("/list")
-    public ResultVO<List<Activity>> getActivityList() {
-        List<Activity> list = activityService.getAllActivities();
-        return ResultVO.success(list);
-    }
 
     @PostMapping("/create")
     public ResultVO<Void> createActivity(@RequestBody ActivityCreateDTO dto) {
@@ -29,15 +24,6 @@ public class ActivityController {
         return ResultVO.success();
     }
 
-//    @PostMapping("/enroll")
-//    public ResultVO<Void> enroll(@RequestParam String studentId, @RequestParam String activityId) {
-//        String result = activityService.enrollActivity(studentId, activityId);
-//        if ("success".equals(result)) {
-//            return ResultVO.success();
-//        } else {
-//            return ResultVO.error(result);
-//        }
-//    }
 @PostMapping("/enroll")
 public ResultVO<Void> enroll(@RequestParam String studentId, @RequestParam String activityId) {
     try {
@@ -138,6 +124,12 @@ public ResultVO<Void> enroll(@RequestParam String studentId, @RequestParam Strin
         }
     }
 
+    // 获取所有活动列表
+    @GetMapping("/list")
+    public ResultVO<List<Activity>> getActivityList() {
+        List<Activity> list = activityService.getAllActivities();
+        return ResultVO.success(list);
+    }
 
     /**
      * 【学生端】获取活动详情
