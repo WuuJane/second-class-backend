@@ -40,4 +40,7 @@ public interface ActivityService {
 
     //获取学生已报名的活动列表
     List<Activity> getMyEnrolledActivities(String studentId);
+
+    //学生取消报名
+    void cancelEnroll(String studentId, String activityId);
 }

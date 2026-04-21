@@ -147,16 +147,16 @@ public class ActivityController {
         return ResultVO.success(list);
     }
 
-//    /**
-//     * 【学生端】取消报名
-//     */
-//    @PostMapping("/cancel-enroll")
-//    public ResultVO<Void> cancelEnroll(@RequestParam String studentId, @RequestParam String activityId) {
-//        try {
-//            activityService.cancelEnroll(studentId, activityId);
-//            return ResultVO.success();
-//        } catch (RuntimeException e) {
-//            return ResultVO.error(e.getMessage()); // 如果活动已经开始等原因不能取消，抛出异常返回给前端
-//        }
-//    }
+    /**
+     * 【学生端】取消报名
+     */
+    @PostMapping("/cancel-enroll")
+    public ResultVO<Void> cancelEnroll(@RequestParam String studentId, @RequestParam String activityId) {
+        try {
+            activityService.cancelEnroll(studentId, activityId);
+            return ResultVO.success();
+        } catch (RuntimeException e) {
+            return ResultVO.error(e.getMessage()); // 如果活动已经开始等原因不能取消，抛出异常返回给前端
+        }
+    }
 }

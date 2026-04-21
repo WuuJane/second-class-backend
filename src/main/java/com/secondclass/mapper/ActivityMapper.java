@@ -22,7 +22,12 @@ public interface ActivityMapper {
     // 自动更新为进行中（活动时间已到）
     int updateStatusToInProgress();
 
+    //获取活动详情
     Activity getActivityById(String activityId);
 
+    //查询学生已报名的活动列表
     List<Activity> getMyEnrolledActivities(String studentId);
+
+    //取消报名
+    int deleteEnrollRecord(@Param("studentId") String studentId, @Param("activityId") String activityId);
 }

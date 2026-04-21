@@ -100,4 +100,10 @@
         WHERE ar.student_id = #{studentId}
         ORDER BY ar.enroll_time DESC
     </select>
+
+    <delete id="deleteEnrollRecord">
+        DELETE FROM activity_record
+        WHERE student_id = #{studentId}
+          AND activity_id = #{activityId}
+    </delete>
 </mapper>

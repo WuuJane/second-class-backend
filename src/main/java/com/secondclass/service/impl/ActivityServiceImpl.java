@@ -218,4 +218,27 @@ public class ActivityServiceImpl implements ActivityService {
         // 直接调用 Mapper 层去数据库做多表联查
         return activityMapper.getMyEnrolledActivities(studentId);
     }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void cancelEnroll(String studentId, String activityId) {
+        // 1. 先查一下活动信息，判断还能不能取消
+        Activity activity = activityMapper.getActivityById(activityId);
+        if (activity == null) {
+            throw new RuntimeException("活动不存在");
+        }
+
+        // 如果当前时间已经超过了活动的开始时间，就不允许取消了
+        if (LocalDateTime.now().isAfter(activity.getStartTime())) {
+            throw new RuntimeException("活动已开始，无法取消报名");
+        }
+
+        // 2. 执行删除报名记录的操作
+        // 这里的 @Param 注解如果报错，记得看下一步 Mapper 层的写法
+        int rows = activityMapper.deleteEnrollRecord(studentId, activityId);
+
+        if (rows == 0) {
+            throw new RuntimeException("未找到你的报名记录，可能已经取消过了");
+        }
+    }
 }
