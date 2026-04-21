@@ -127,7 +127,7 @@ public ResultVO<Void> enroll(@RequestParam String studentId, @RequestParam Strin
         }
     }
 
-    // 获取所有活动列表
+    // 获取活动大厅所有活动列表
     @GetMapping("/list")
     public ResultVO<List<Activity>> getActivityList() {
         List<Activity> list = activityService.getAllActivities();
@@ -145,6 +145,7 @@ public ResultVO<Void> enroll(@RequestParam String studentId, @RequestParam Strin
 
     /**
      * 【学生端】获取我报名的活动列表 (我的活动模块)
+     * 查询个人已参与、已报名的活动
      */
     @GetMapping("/my-enroll")
     public ResultVO<List<Activity>> getMyEnrolledActivities(@RequestParam String studentId) {
