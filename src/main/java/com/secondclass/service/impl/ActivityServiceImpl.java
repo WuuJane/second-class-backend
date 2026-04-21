@@ -154,7 +154,7 @@ public class ActivityServiceImpl implements ActivityService {
 //添加悲观锁，防止并发访问
     @Override
     @Transactional(rollbackFor = Exception.class) // 🌟 必须加事务，保证排队和报错回滚
-    public String enrollActivity(String studentId, String activityId) {
+    public String enrollActivity(String studentId, String activityId) {//活动报名接口
         // 🌟 1. 改用加了悲观锁的查询方法，谁先查到谁锁住这一行！
         Activity activity = activityMapper.selectByIdForUpdate(activityId);
         if (activity == null) {

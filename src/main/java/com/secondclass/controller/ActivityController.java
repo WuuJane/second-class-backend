@@ -24,6 +24,7 @@ public class ActivityController {
         return ResultVO.success();
     }
 
+    //学生报名活动接口
 @PostMapping("/enroll")
 public ResultVO<Void> enroll(@RequestParam String studentId, @RequestParam String activityId) {
     try {
