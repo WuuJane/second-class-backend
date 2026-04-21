@@ -35,16 +35,6 @@ public ResultVO<Void> enroll(@RequestParam String studentId, @RequestParam Strin
 }
 
 
-    @PostMapping("/sign")
-    public ResultVO<Void> sign(@RequestParam String studentId, @RequestParam String activityId) {
-        String result = activityService.signActivity(studentId, activityId);
-        if ("success".equals(result)) {
-            return ResultVO.success();
-        } else {
-            return ResultVO.error(result);
-        }
-    }
-
     @PostMapping("/audit")
     public ResultVO<Void> audit(@RequestParam String activityId, @RequestParam boolean isPass) {
         try {
@@ -121,6 +111,18 @@ public ResultVO<Void> enroll(@RequestParam String studentId, @RequestParam Strin
             return ResultVO.success();
         } catch (RuntimeException e) {
             return ResultVO.error(e.getMessage());
+        }
+    }
+
+
+// 学生扫码签到接口
+    @PostMapping("/sign")
+    public ResultVO<Void> sign(@RequestParam String studentId, @RequestParam String activityId) {
+        String result = activityService.signActivity(studentId, activityId);
+        if ("success".equals(result)) {
+            return ResultVO.success();
+        } else {
+            return ResultVO.error(result);
         }
     }
 

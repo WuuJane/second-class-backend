@@ -70,23 +70,6 @@ public class ActivityServiceImpl implements ActivityService {
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
-    public String signActivity(String studentId, String activityId) {
-        ActivityRecord record = activityRecordMapper.selectByActivityIdAndStudentId(activityId, studentId);
-        if (record == null) return "该学生尚未报名该活动，无法签到！";
-        if (record.getSignStatus() != null && record.getSignStatus() == 1) return "该学生已经签到过了，请勿重复操作！";
-
-        activityRecordMapper.updateSignStatus(record.getId());
-
-        Activity activity = activityMapper.selectById(activityId);
-        if (activity != null && activity.getActivityHour() != null) {
-            studentMapper.addHour(studentId, activity.getHourType(), activity.getActivityHour());
-        }
-
-        return "success";
-    }
-
-    @Override
     public void auditActivity(String activityId, boolean isPass) {
         Activity activity = activityMapper.selectById(activityId);
         if (activity == null) throw new RuntimeException("活动不存在");
@@ -151,6 +134,22 @@ public class ActivityServiceImpl implements ActivityService {
 
 
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public String signActivity(String studentId, String activityId) {
+        ActivityRecord record = activityRecordMapper.selectByActivityIdAndStudentId(activityId, studentId);
+        if (record == null) return "该学生尚未报名该活动，无法签到！";
+        if (record.getSignStatus() != null && record.getSignStatus() == 1) return "该学生已经签到过了，请勿重复操作！";
+
+        activityRecordMapper.updateSignStatus(record.getId());
+
+        Activity activity = activityMapper.selectById(activityId);
+        if (activity != null && activity.getActivityHour() != null) {
+            studentMapper.addHour(studentId, activity.getHourType(), activity.getActivityHour());
+        }
+
+        return "success";
+    }
 
 //添加悲观锁，防止并发访问
     @Override
