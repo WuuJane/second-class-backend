@@ -138,15 +138,15 @@ public class ActivityController {
         return ResultVO.success(activity);
     }
 
-//    /**
-//     * 【学生端】获取我报名的活动列表 (我的活动模块)
-//     */
-//    @GetMapping("/my-enroll")
-//    public ResultVO<List<Activity>> getMyEnrolledActivities(@RequestParam String studentId) {
-//        List<Activity> list = activityService.getMyEnrolledActivities(studentId);
-//        return ResultVO.success(list);
-//    }
-//
+    /**
+     * 【学生端】获取我报名的活动列表 (我的活动模块)
+     */
+    @GetMapping("/my-enroll")
+    public ResultVO<List<Activity>> getMyEnrolledActivities(@RequestParam String studentId) {
+        List<Activity> list = activityService.getMyEnrolledActivities(studentId);
+        return ResultVO.success(list);
+    }
+
 //    /**
 //     * 【学生端】取消报名
 //     */

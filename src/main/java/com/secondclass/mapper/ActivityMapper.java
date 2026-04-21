@@ -23,4 +23,6 @@ public interface ActivityMapper {
     int updateStatusToInProgress();
 
     Activity getActivityById(String activityId);
+
+    List<Activity> getMyEnrolledActivities(String studentId);
 }

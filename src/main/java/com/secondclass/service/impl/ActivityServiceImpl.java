@@ -212,4 +212,10 @@ public class ActivityServiceImpl implements ActivityService {
         // 调用 Mapper 层，去数据库里查数据
         return activityMapper.getActivityById(activityId);
     }
+
+    @Override
+    public List<Activity> getMyEnrolledActivities(String studentId) {
+        // 直接调用 Mapper 层去数据库做多表联查
+        return activityMapper.getMyEnrolledActivities(studentId);
+    }
 }

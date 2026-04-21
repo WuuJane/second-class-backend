@@ -35,8 +35,9 @@ public interface ActivityService {
     List<Map<String, Object>> getActualAttendanceList(String activityId);
     void finishActivity(String activityId, String managerId);
 
-    /**
-     * 根据活动ID获取活动详情
-     */
+    // 根据活动ID获取活动详情
     Activity getActivityById(String activityId);
+
+    //获取学生已报名的活动列表
+    List<Activity> getMyEnrolledActivities(String studentId);
 }

@@ -93,4 +93,11 @@
     <select id="getActivityById" resultType="com.secondclass.entity.Activity">
         SELECT * FROM activity WHERE activity_id = #{activityId}
     </select>
+
+    <select id="getMyEnrolledActivities" resultType="com.secondclass.entity.Activity">
+        SELECT a.* FROM activity a
+                            INNER JOIN activity_record ar ON a.activity_id = ar.activity_id
+        WHERE ar.student_id = #{studentId}
+        ORDER BY ar.enroll_time DESC
+    </select>
 </mapper>
