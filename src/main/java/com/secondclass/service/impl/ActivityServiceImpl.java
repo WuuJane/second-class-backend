@@ -207,3 +207,46 @@ public class ActivityServiceImpl implements ActivityService {
         activityMapper.updateStatus(activityId, "活动结束");
     }
 }
+
+    @Override
+    public List<Activity> getToAuditList(String auditorOrgId) {
+        // 查询本组织负责审核的，且状态为“等待初审”或“待终审”的活动
+        return activityMapper.selectToAudit(auditorOrgId);
+    }
+
+    @Override
+    public List<Activity> getToSettleList(String auditorOrgId) {
+        // 查询状态为“活动结束”的活动
+        return activityMapper.selectToSettle(auditorOrgId);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void auditActivity(String activityId, String status) {
+        // 直接更新状态：被驳回、待终审 或 待报名
+        activityMapper.updateStatus(activityId, status);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void settleActivity(String activityId) {
+        Activity activity = activityMapper.selectById(activityId);
+        if (activity == null) throw new RuntimeException("活动不存在");
+        if (!"活动结束".equals(activity.getActivityStatus())) {
+            throw new RuntimeException("操作失败：只有“活动结束”的活动才能进行结算！");
+        }
+
+        // 1. 核心步骤：给所有【已签到】的学生发放学时
+        // 找出该活动下所有 sign_status = 1 的学生 ID
+        List<String> signedStudentIds = activityRecordMapper.selectSignedStudentIds(activityId);
+
+        if (signedStudentIds != null && !signedStudentIds.isEmpty()) {
+            for (String studentId : signedStudentIds) {
+                // 调用你之前的 studentMapper.addHour 逻辑
+                studentMapper.addHour(studentId, activity.getHourType(), activity.getActivityHour());
+            }
+        }
+
+        // 2. 将活动状态改为“活动完结”
+        activityMapper.updateStatus(activityId, "活动完结");
+    }
