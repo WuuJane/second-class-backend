@@ -34,4 +34,16 @@ public interface ActivityService {
     void editAndResubmit(Activity activity);
     List<Map<String, Object>> getActualAttendanceList(String activityId);
     void finishActivity(String activityId, String managerId);
+
+    // 1. 获取待审批列表（等待初审或待终审）
+    List<Activity> getToAuditList(String auditorOrgId);
+
+    // 2. 获取待结算列表（活动结束）
+    List<Activity> getToSettleList(String auditorOrgId);
+
+    // 3. 审批操作
+    void auditActivity(String activityId, String status);
+
+    // 4. 完结结算（最核心：更改状态并给学生加分）
+    void settleActivity(String activityId);
 }
