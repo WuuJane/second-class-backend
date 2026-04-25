@@ -51,4 +51,8 @@
           AND ar.sign_status = 1
         ORDER BY ar.sign_time ASC
     </select>
+    <select id="selectSignedStudentIds" resultType="string">
+        SELECT student_id FROM activity_record
+        WHERE activity_id = #{activityId} AND sign_status = 1
+    </select>
 </mapper>

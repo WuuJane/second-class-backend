@@ -88,4 +88,15 @@
         WHERE activity_status = '待报名'
           AND start_time &lt;= NOW()
     </update>
+    <select id="selectToAudit" resultType="com.secondclass.entity.Activity">
+        SELECT * FROM activity
+        WHERE auditor_org_id = #{orgId}
+          AND (activity_status = '等待初审' OR activity_status = '待终审')
+    </select>
+
+    <select id="selectToSettle" resultType="com.secondclass.entity.Activity">
+        SELECT * FROM activity
+        WHERE auditor_org_id = #{orgId}
+          AND activity_status = '活动结束'
+    </select>
 </mapper>
