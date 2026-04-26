@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 
 @Mapper
 public interface StudentMapper {
-    // 根据学号查询学生（登录时用）
+    // 根据学号查询学生
     Student selectById(String studentId);
 
     // 给学生发放对应类别的学时

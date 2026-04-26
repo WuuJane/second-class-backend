@@ -17,11 +17,6 @@ public class ActivityController {
     @Autowired
     private ActivityService activityService;
 
-    @GetMapping("/list")
-    public ResultVO<List<Activity>> getActivityList() {
-        List<Activity> list = activityService.getAllActivities();
-        return ResultVO.success(list);
-    }
 
     @PostMapping("/create")
     public ResultVO<Void> createActivity(@RequestBody ActivityCreateDTO dto) {
@@ -29,25 +24,17 @@ public class ActivityController {
         return ResultVO.success();
     }
 
-    @PostMapping("/enroll")
-    public ResultVO<Void> enroll(@RequestParam String studentId, @RequestParam String activityId) {
-        String result = activityService.enrollActivity(studentId, activityId);
-        if ("success".equals(result)) {
-            return ResultVO.success();
-        } else {
-            return ResultVO.error(result);
-        }
+    //学生报名活动接口
+@PostMapping("/enroll")
+public ResultVO<Void> enroll(@RequestParam String studentId, @RequestParam String activityId) {
+    try {
+        activityService.enrollActivity(studentId, activityId);
+        return ResultVO.success();
+    } catch (RuntimeException e) {
+        return ResultVO.error(e.getMessage());
     }
+}
 
-    @PostMapping("/sign")
-    public ResultVO<Void> sign(@RequestParam String studentId, @RequestParam String activityId) {
-        String result = activityService.signActivity(studentId, activityId);
-        if ("success".equals(result)) {
-            return ResultVO.success();
-        } else {
-            return ResultVO.error(result);
-        }
-    }
 
     @PostMapping("/audit")
     public ResultVO<Void> audit(@RequestParam String activityId, @RequestParam boolean isPass) {
@@ -126,5 +113,66 @@ public class ActivityController {
         } catch (RuntimeException e) {
             return ResultVO.error(e.getMessage());
         }
+    }
+
+
+// 学生扫码签到接口
+    @PostMapping("/sign")
+    public ResultVO<Void> sign(@RequestParam String studentId, @RequestParam String activityId) {
+        String result = activityService.signActivity(studentId, activityId);
+        if ("success".equals(result)) {
+            return ResultVO.success();
+        } else {
+            return ResultVO.error(result);
+        }
+    }
+
+    // 获取活动大厅所有活动列表
+    @GetMapping("/list")
+    public ResultVO<List<Activity>> getActivityList() {
+        List<Activity> list = activityService.getAllActivities();
+        return ResultVO.success(list);
+    }
+
+    /**
+     * 【学生端】获取活动详情
+     */
+    @GetMapping("/detail/{activityId}")
+    public ResultVO<Activity> getActivityDetail(@PathVariable String activityId) {
+        Activity activity = activityService.getActivityById(activityId);
+        return ResultVO.success(activity);
+    }
+
+    /**
+     * 【学生端】获取我报名的活动列表 (我的活动模块)
+     * 查询个人已参与、已报名的活动
+     */
+    @GetMapping("/my-enroll")
+    public ResultVO<List<Activity>> getMyEnrolledActivities(@RequestParam String studentId) {
+        List<Activity> list = activityService.getMyEnrolledActivities(studentId);
+        return ResultVO.success(list);
+    }
+
+    /**
+     * 【学生端】取消报名
+     */
+    @PostMapping("/cancel-enroll")
+    public ResultVO<Void> cancelEnroll(@RequestParam String studentId, @RequestParam String activityId) {
+        try {
+            activityService.cancelEnroll(studentId, activityId);
+            return ResultVO.success();
+        } catch (RuntimeException e) {
+            return ResultVO.error(e.getMessage()); // 如果活动已经开始等原因不能取消，抛出异常返回给前端
+        }
+    }
+
+
+    /**
+     * 【学生端】获取已获学时的历史活动 (我的学时模块)
+     */
+    @GetMapping("/history")
+    public ResultVO<List<Activity>> getHistoryActivities(@RequestParam String studentId) {
+        List<Activity> list = activityService.getHistoryActivities(studentId);
+        return ResultVO.success(list);
     }
 }

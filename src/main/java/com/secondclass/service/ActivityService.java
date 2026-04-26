@@ -35,15 +35,15 @@ public interface ActivityService {
     List<Map<String, Object>> getActualAttendanceList(String activityId);
     void finishActivity(String activityId, String managerId);
 
-    // 1. 获取待审批列表（等待初审或待终审）
-    List<Activity> getToAuditList(String auditorOrgId);
+    // 根据活动ID获取活动详情
+    Activity getActivityById(String activityId);
 
-    // 2. 获取待结算列表（活动结束）
-    List<Activity> getToSettleList(String auditorOrgId);
+    //获取学生已报名的活动列表
+    List<Activity> getMyEnrolledActivities(String studentId);
 
-    // 3. 审批操作
-    void auditActivity(String activityId, String status);
+    //学生取消报名
+    void cancelEnroll(String studentId, String activityId);
 
-    // 4. 完结结算（最核心：更改状态并给学生加分）
-    void settleActivity(String activityId);
+    // 获取学生已签到的历史活动记录
+    List<Activity> getHistoryActivities(String studentId);
 }

@@ -42,11 +42,6 @@ public class ActivityServiceImpl implements ActivityService {
     private SysOrganizationMapper sysOrganizationMapper;
 
     @Override
-    public List<Activity> getAllActivities() {
-        return activityMapper.selectAll();
-    }
-
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public void createActivity(ActivityCreateDTO dto) {
         Activity activity = new Activity();
@@ -72,46 +67,6 @@ public class ActivityServiceImpl implements ActivityService {
         // 🌟 修改点 1：尊重原版设计，发布后的初始状态设为"等待初审"
         activity.setActivityStatus("等待初审");
         activityMapper.insert(activity);
-    }
-
-    @Override
-    public String enrollActivity(String studentId, String activityId) {
-        Activity activity = activityMapper.selectById(activityId);
-        if (activity == null) return "活动不存在";
-
-        LocalDateTime now = LocalDateTime.now();
-        if (now.isBefore(activity.getEnrollStartTime())) return "报名还未开始！";
-        if (now.isAfter(activity.getEnrollEndTime())) return "报名已经结束！";
-
-        int enrolledCount = activityRecordMapper.countByActivityId(activityId);
-        if (enrolledCount >= activity.getCapacity()) return "手慢了，活动名额已满！";
-
-        int isEnrolled = activityRecordMapper.checkEnrolled(activityId, studentId);
-        if (isEnrolled > 0) return "您已经报名过该活动，请勿重复报名！";
-
-        ActivityRecord record = new ActivityRecord();
-        record.setActivityId(activityId);
-        record.setStudentId(studentId);
-        activityRecordMapper.insert(record);
-
-        return "success";
-    }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public String signActivity(String studentId, String activityId) {
-        ActivityRecord record = activityRecordMapper.selectByActivityIdAndStudentId(activityId, studentId);
-        if (record == null) return "该学生尚未报名该活动，无法签到！";
-        if (record.getSignStatus() != null && record.getSignStatus() == 1) return "该学生已经签到过了，请勿重复操作！";
-
-        activityRecordMapper.updateSignStatus(record.getId());
-
-        Activity activity = activityMapper.selectById(activityId);
-        if (activity != null && activity.getActivityHour() != null) {
-            studentMapper.addHour(studentId, activity.getHourType(), activity.getActivityHour());
-        }
-
-        return "success";
     }
 
     @Override
@@ -176,6 +131,74 @@ public class ActivityServiceImpl implements ActivityService {
         // 5. 执行更新
         activityMapper.updateActivity(activity);
     }
+
+
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public String signActivity(String studentId, String activityId) {
+        ActivityRecord record = activityRecordMapper.selectByActivityIdAndStudentId(activityId, studentId);
+        if (record == null) return "该学生尚未报名该活动，无法签到！";
+        if (record.getSignStatus() != null && record.getSignStatus() == 1) return "该学生已经签到过了，请勿重复操作！";
+
+        activityRecordMapper.updateSignStatus(record.getId());
+
+        Activity activity = activityMapper.selectById(activityId);
+        if (activity != null && activity.getActivityHour() != null) {
+            studentMapper.addHour(studentId, activity.getHourType(), activity.getActivityHour());
+        }
+
+        return "success";
+    }
+
+//添加悲观锁，防止并发访问
+    @Override
+    @Transactional(rollbackFor = Exception.class) // 🌟 必须加事务，保证排队和报错回滚
+    public String enrollActivity(String studentId, String activityId) {//活动报名接口
+        // 🌟 1. 改用加了悲观锁的查询方法，谁先查到谁锁住这一行！
+        Activity activity = activityMapper.selectByIdForUpdate(activityId);
+        if (activity == null) {
+            throw new RuntimeException("活动不存在");
+        }
+
+        // 2. 时间校验（防作弊）
+        LocalDateTime now = LocalDateTime.now();
+        if (now.isBefore(activity.getEnrollStartTime())) {
+            throw new RuntimeException("报名还未开始！");
+        }
+        if (now.isAfter(activity.getEnrollEndTime())) {
+            throw new RuntimeException("报名已经结束！");
+        }
+
+        // 3. 查重校验：不能重复报名
+        int isEnrolled = activityRecordMapper.checkEnrolled(activityId, studentId);
+        if (isEnrolled > 0) {
+            throw new RuntimeException("您已经报名过该活动，请勿重复报名！");
+        }
+
+        // 4. 并发核心校验：实时统计已报名人数
+        int enrolledCount = activityRecordMapper.countByActivityId(activityId);
+        if (enrolledCount >= activity.getCapacity()) {
+            throw new RuntimeException("手慢了，活动名额已满！");
+        }
+
+        // 5. 插入报名记录
+        ActivityRecord record = new ActivityRecord();
+        record.setActivityId(activityId);
+        record.setStudentId(studentId);
+        activityRecordMapper.insert(record);
+
+        return "success";
+    }
+
+
+    // 获取所有活动列表
+    @Override
+    public List<Activity> getAllActivities() {
+        return activityMapper.selectAll();
+    }
+
+
     @Override
     public List<Map<String, Object>> getActualAttendanceList(String activityId) {
         // 调用 Mapper 层专门查询已签到学生的方法
@@ -206,47 +229,44 @@ public class ActivityServiceImpl implements ActivityService {
         // 将状态更为“活动结束”，等待审核人完结并自动发学时
         activityMapper.updateStatus(activityId, "活动结束");
     }
+
+    @Override
+    public Activity getActivityById(String activityId) {
+        // 调用 Mapper 层，去数据库里查数据
+        return activityMapper.getActivityById(activityId);
+    }
+
+    @Override
+    public List<Activity> getMyEnrolledActivities(String studentId) {
+        // 直接调用 Mapper 层去数据库做多表联查
+        return activityMapper.getMyEnrolledActivities(studentId);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void cancelEnroll(String studentId, String activityId) {
+        // 1. 先查一下活动信息，判断还能不能取消
+        Activity activity = activityMapper.getActivityById(activityId);
+        if (activity == null) {
+            throw new RuntimeException("活动不存在");
+        }
+
+        // 如果当前时间已经超过了活动的开始时间，就不允许取消了
+        if (LocalDateTime.now().isAfter(activity.getStartTime())) {
+            throw new RuntimeException("活动已开始，无法取消报名");
+        }
+
+        // 2. 执行删除报名记录的操作
+        // 这里的 @Param 注解如果报错，记得看下一步 Mapper 层的写法
+        int rows = activityMapper.deleteEnrollRecord(studentId, activityId);
+
+        if (rows == 0) {
+            throw new RuntimeException("未找到你的报名记录，可能已经取消过了");
+        }
+    }
+
+    @Override
+    public List<Activity> getHistoryActivities(String studentId) {
+        return activityMapper.getHistoryActivities(studentId);
+    }
 }
-
-    @Override
-    public List<Activity> getToAuditList(String auditorOrgId) {
-        // 查询本组织负责审核的，且状态为“等待初审”或“待终审”的活动
-        return activityMapper.selectToAudit(auditorOrgId);
-    }
-
-    @Override
-    public List<Activity> getToSettleList(String auditorOrgId) {
-        // 查询状态为“活动结束”的活动
-        return activityMapper.selectToSettle(auditorOrgId);
-    }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public void auditActivity(String activityId, String status) {
-        // 直接更新状态：被驳回、待终审 或 待报名
-        activityMapper.updateStatus(activityId, status);
-    }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public void settleActivity(String activityId) {
-        Activity activity = activityMapper.selectById(activityId);
-        if (activity == null) throw new RuntimeException("活动不存在");
-        if (!"活动结束".equals(activity.getActivityStatus())) {
-            throw new RuntimeException("操作失败：只有“活动结束”的活动才能进行结算！");
-        }
-
-        // 1. 核心步骤：给所有【已签到】的学生发放学时
-        // 找出该活动下所有 sign_status = 1 的学生 ID
-        List<String> signedStudentIds = activityRecordMapper.selectSignedStudentIds(activityId);
-
-        if (signedStudentIds != null && !signedStudentIds.isEmpty()) {
-            for (String studentId : signedStudentIds) {
-                // 调用你之前的 studentMapper.addHour 逻辑
-                studentMapper.addHour(studentId, activity.getHourType(), activity.getActivityHour());
-            }
-        }
-
-        // 2. 将活动状态改为“活动完结”
-        activityMapper.updateStatus(activityId, "活动完结");
-    }
