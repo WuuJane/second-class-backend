@@ -88,15 +88,34 @@
         WHERE activity_status = '待报名'
           AND start_time &lt;= NOW()
     </update>
-    <select id="selectToAudit" resultType="com.secondclass.entity.Activity">
-        SELECT * FROM activity
-        WHERE auditor_org_id = #{orgId}
-          AND (activity_status = '等待初审' OR activity_status = '待终审')
+
+
+    <select id="getActivityById" resultType="com.secondclass.entity.Activity">
+        SELECT * FROM activity WHERE activity_id = #{activityId}
     </select>
 
-    <select id="selectToSettle" resultType="com.secondclass.entity.Activity">
-        SELECT * FROM activity
-        WHERE auditor_org_id = #{orgId}
-          AND activity_status = '活动结束'
+    <select id="getMyEnrolledActivities" resultType="com.secondclass.entity.Activity">
+        SELECT a.* FROM activity a
+                            INNER JOIN activity_record ar ON a.activity_id = ar.activity_id
+        WHERE ar.student_id = #{studentId}
+        ORDER BY ar.enroll_time DESC
+    </select>
+
+    <delete id="deleteEnrollRecord">
+        DELETE FROM activity_record
+        WHERE student_id = #{studentId}
+          AND activity_id = #{activityId}
+    </delete>
+
+    <select id="getHistoryActivities" resultType="com.secondclass.entity.Activity">
+        SELECT a.* FROM activity a
+                            INNER JOIN activity_record ar ON a.activity_id = ar.activity_id
+        WHERE ar.student_id = #{studentId}
+          AND ar.sign_status = 1
+        ORDER BY ar.sign_time DESC
+    </select>
+
+    <select id="selectByIdForUpdate" resultType="com.secondclass.entity.Activity">
+        SELECT * FROM activity WHERE activity_id = #{activityId} FOR UPDATE
     </select>
 </mapper>
