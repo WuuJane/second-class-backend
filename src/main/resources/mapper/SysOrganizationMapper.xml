@@ -7,4 +7,36 @@
         WHERE org_id = #{orgId}
     </select>
 
+    <select id="selectAllOrgs" resultType="com.secondclass.entity.SysOrganization">
+        SELECT * FROM sys_organization ORDER BY create_time DESC
+    </select>
+
+    <select id="selectByName" resultType="com.secondclass.entity.SysOrganization">
+        SELECT * FROM sys_organization WHERE org_name = #{orgName} LIMIT 1
+    </select>
+
+    <select id="selectById" resultType="com.secondclass.entity.SysOrganization">
+        SELECT * FROM sys_organization WHERE org_id = #{orgId}
+    </select>
+
+    <insert id="insertOrg">
+        INSERT INTO sys_organization (
+            org_id, org_name, auditor_org_id, create_time
+        ) VALUES (
+                     #{orgId}, #{orgName}, #{auditorOrgId}, NOW()
+                 )
+    </insert>
+
+    <update id="updateOrg" parameterType="com.secondclass.entity.SysOrganization">
+        UPDATE sys_organization
+        <set>
+            <if test="orgName != null and orgName != ''">org_name = #{orgName},</if>
+            <if test="auditorOrgId != null and auditorOrgId != ''">auditor_org_id = #{auditorOrgId},</if>
+        </set>
+        WHERE org_id = #{orgId}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM sys_organization WHERE org_id = #{orgId}
+    </delete>
 </mapper>
