@@ -70,12 +70,30 @@ public class ActivityServiceImpl implements ActivityService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void auditActivity(String activityId, boolean isPass) {
         Activity activity = activityMapper.selectById(activityId);
         if (activity == null) throw new RuntimeException("活动不存在");
 
-        // 注意：这里的状态流转我们后续开发"审核老师"功能时再做细化（区分初审通过和终审通过）
-        String newStatus = isPass ? "待报名" : "被驳回";
+        String currentStatus = activity.getActivityStatus();
+        String newStatus = "被驳回"; // 默认只要是驳回，都退回给负责人修改
+
+        if (isPass) {
+            // 根据当前所处的阶段，推导下一个状态
+            if ("等待初审".equals(currentStatus)) {
+                // 如果有终审机制，初审过了就是待终审
+                newStatus = "待终审";
+            } else if ("待终审".equals(currentStatus)) {
+                // 终审过了，才正式向学生开放报名
+                newStatus = "待报名";
+            } else if ("活动结束".equals(currentStatus)) {
+                // 完结审核过了，活动生命周期彻底结束
+                newStatus = "已完结";
+            } else {
+                throw new RuntimeException("当前状态不可审核");
+            }
+        }
+
         activityMapper.updateStatus(activityId, newStatus);
     }
 
