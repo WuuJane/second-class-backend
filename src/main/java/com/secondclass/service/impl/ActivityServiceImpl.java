@@ -274,8 +274,7 @@ public class ActivityServiceImpl implements ActivityService {
             throw new RuntimeException("活动已开始，无法取消报名");
         }
 
-        // 2. 执行删除报名记录的操作
-        // 这里的 @Param 注解如果报错，记得看下一步 Mapper 层的写法
+        // 2. 执行删除报名
         int rows = activityMapper.deleteEnrollRecord(studentId, activityId);
 
         if (rows == 0) {
