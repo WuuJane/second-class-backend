@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.secondclass.mapper.ActivityMapper">
+
+    <select id="selectAll" resultType="com.secondclass.entity.Activity">
+        SELECT * FROM activity ORDER BY create_time DESC
+    </select>
+
+    <insert id="insert">
+        INSERT INTO activity (
+            activity_id, activity_name, department, host_unit, manager_id,
+            auditor_id, activity_hour, hour_type, start_time, end_time,
+            sign_type, activity_status, create_time, activity_img,
+            location, capacity, enroll_start_time, enroll_end_time,
+            manager_org_id, auditor_org_id
+        ) VALUES (
+                     #{activityId}, #{activityName}, #{department}, #{hostUnit}, #{managerId},
+                     #{auditorId}, #{activityHour}, #{hourType}, #{startTime}, #{endTime},
+                     #{signType}, #{activityStatus}, NOW(), #{activityImg},
+                     #{location}, #{capacity}, #{enrollStartTime}, #{enrollEndTime},
+                     #{managerOrgId}, #{auditorOrgId}
+                 )
+    </insert>
+
+    <select id="selectById" resultType="com.secondclass.entity.Activity">
+        SELECT * FROM activity WHERE activity_id = #{activityId}
+    </select>
+
+    <update id="updateStatus">
+        UPDATE activity
+        SET activity_status = #{status}
+        WHERE activity_id = #{activityId}
+    </update>
+
+    <select id="selectByManagerId" resultType="com.secondclass.entity.Activity">
+        SELECT * FROM activity
+        WHERE manager_id = #{managerId}
+        ORDER BY create_time DESC
+    </select>
+    <update id="updateActivity" parameterType="com.secondclass.entity.Activity">
+        UPDATE activity
+        <set>
+            <if test="activityName != null and activityName != ''">
+                activity_name = #{activityName},
+            </if>
+            <if test="department != null and department != ''">
+                department = #{department},
+            </if>
+            <if test="hostUnit != null and hostUnit != ''">
+                host_unit = #{hostUnit},
+            </if>
+            <if test="activityHour != null">
+                activity_hour = #{activityHour},
+            </if>
+            <if test="hourType != null and hourType != ''">
+                hour_type = #{hourType},
+            </if>
+            <if test="location != null and location != ''">
+                location = #{location},
+            </if>
+            <if test="startTime != null">
+                start_time = #{startTime},
+            </if>
+            <if test="endTime != null">
+                end_time = #{endTime},
+            </if>
+            <if test="enrollStartTime != null">
+                enroll_start_time = #{enrollStartTime},
+            </if>
+            <if test="enrollEndTime != null">
+                enroll_end_time = #{enrollEndTime},
+            </if>
+            <if test="capacity != null">
+                capacity = #{capacity},
+            </if>
+            <if test="activityImg != null and activityImg != ''">
+                activity_img = #{activityImg},
+            </if>
+            <if test="activityStatus != null and activityStatus != ''">
+                activity_status = #{activityStatus},
+            </if>
+        </set>
+        WHERE activity_id = #{activityId}
+    </update>
+    <update id="updateStatusToInProgress">
+        UPDATE activity
+        SET activity_status = '活动进行中'
+        WHERE activity_status = '待报名'
+          AND start_time &lt;= NOW()
+    </update>
+
+
+    <select id="getActivityById" resultType="com.secondclass.entity.Activity">
+        SELECT * FROM activity WHERE activity_id = #{activityId}
+    </select>
+
+    <select id="getMyEnrolledActivities" resultType="com.secondclass.entity.Activity">
+        SELECT a.* FROM activity a
+                            INNER JOIN activity_record ar ON a.activity_id = ar.activity_id
+        WHERE ar.student_id = #{studentId}
+        ORDER BY ar.enroll_time DESC
+    </select>
+
+    <delete id="deleteEnrollRecord">
+        DELETE FROM activity_record
+        WHERE student_id = #{studentId}
+          AND activity_id = #{activityId}
+    </delete>
+
+    <select id="getHistoryActivities" resultType="com.secondclass.entity.Activity">
+        SELECT a.* FROM activity a
+                            INNER JOIN activity_record ar ON a.activity_id = ar.activity_id
+        WHERE ar.student_id = #{studentId}
+          AND ar.sign_status = 1
+        ORDER BY ar.sign_time DESC
+    </select>
+
+    <select id="selectByIdForUpdate" resultType="com.secondclass.entity.Activity">
+        SELECT * FROM activity WHERE activity_id = #{activityId} FOR UPDATE
+    </select>
+</mapper>

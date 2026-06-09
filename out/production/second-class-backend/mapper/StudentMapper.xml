@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.secondclass.mapper.StudentMapper">
+
+    <select id="selectById" resultType="com.secondclass.entity.Student">
+        SELECT * FROM student WHERE student_id = #{studentId}
+    </select>
+
+    <update id="addHour">
+        UPDATE student
+        <set>
+            <choose>
+                <when test="hourType.contains('政治')"> politics_hour = politics_hour + #{hour}, </when>
+                <when test="hourType.contains('人文')"> humanity_hour = humanity_hour + #{hour}, </when>
+                <when test="hourType.contains('创新')"> innovation_hour = innovation_hour + #{hour}, </when>
+                <when test="hourType.contains('社会')"> social_hour = social_hour + #{hour}, </when>
+            </choose>
+        </set>
+        WHERE student_id = #{studentId}
+    </update>
+
+    <select id="selectAll" resultType="com.secondclass.entity.Student">
+        SELECT * FROM student ORDER BY student_id
+    </select>
+
+    <update id="updateStatus">
+        UPDATE student SET status = #{status} WHERE student_id = #{studentId}
+    </update>
+
+    <insert id="insert" parameterType="com.secondclass.entity.Student">
+        INSERT INTO student (
+            student_id, student_name, student_department, grade,
+            politics_hour, humanity_hour, innovation_hour, social_hour, password
+        ) VALUES (
+                     #{studentId}, #{studentName}, #{studentDepartment}, #{grade},
+                     COALESCE(#{politicsHour}, 0), COALESCE(#{humanityHour}, 0),
+                     COALESCE(#{innovationHour}, 0), COALESCE(#{socialHour}, 0),
+                     #{password}
+                 )
+    </insert>
+
+    <update id="update" parameterType="com.secondclass.entity.Student">
+        UPDATE student
+        <set>
+            <if test="studentName != null and studentName != ''">
+                student_name = #{studentName},
+            </if>
+            <if test="studentDepartment != null and studentDepartment != ''">
+                student_department = #{studentDepartment},
+            </if>
+            <if test="grade != null and grade != ''">
+                grade = #{grade},
+            </if>
+            <if test="politicsHour != null">
+                politics_hour = #{politicsHour},
+            </if>
+            <if test="humanityHour != null">
+                humanity_hour = #{humanityHour},
+            </if>
+            <if test="innovationHour != null">
+                innovation_hour = #{innovationHour},
+            </if>
+            <if test="socialHour != null">
+                social_hour = #{socialHour},
+            </if>
+            <if test="password != null and password != ''">
+                password = #{password},
+            </if>
+        </set>
+        WHERE student_id = #{studentId}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM student WHERE student_id = #{id}
+    </delete>
+
+</mapper>

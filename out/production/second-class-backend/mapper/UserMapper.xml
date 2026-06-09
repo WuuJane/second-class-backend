@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.secondclass.mapper.UserMapper">
+
+    <select id="selectById" resultType="com.secondclass.entity.TUser">
+        SELECT * FROM t_user WHERE id = #{id}
+    </select>
+
+    <select id="selectAll" resultType="com.secondclass.entity.TUser">
+        SELECT * FROM t_user ORDER BY id
+    </select>
+
+    <insert id="insert" parameterType="com.secondclass.entity.TUser">
+        INSERT INTO t_user (id, name, role, department, status, password, org_id)
+        VALUES (#{id}, #{name}, #{role}, #{department}, #{status}, #{password}, #{orgId})
+    </insert>
+
+    <update id="update" parameterType="com.secondclass.entity.TUser">
+        UPDATE t_user
+        <set>
+            <if test="name != null">name = #{name},</if>
+            <if test="role != null">role = #{role},</if>
+            <if test="department != null">department = #{department},</if>
+            <if test="orgId != null">org_id = #{orgId},</if>
+            <if test="password != null and password != ''">password = #{password},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM t_user WHERE id = #{id}
+    </delete>
+
+    <update id="updateStatus">
+        UPDATE t_user SET status = #{status} WHERE id = #{id}
+    </update>
+
+</mapper>
