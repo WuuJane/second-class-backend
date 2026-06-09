@@ -6,4 +6,27 @@
         SELECT * FROM admin WHERE work_no = #{workNo}
     </select>
 
+    <select id="selectAll" resultType="com.secondclass.entity.Admin">
+        SELECT * FROM admin ORDER BY id
+    </select>
+
+    <insert id="insert" parameterType="com.secondclass.entity.Admin" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO admin (name, work_no, password)
+        VALUES (#{name}, #{workNo}, #{password})
+    </insert>
+
+    <update id="update" parameterType="com.secondclass.entity.Admin">
+        UPDATE admin
+        <set>
+            <if test="name != null">name = #{name},</if>
+            <if test="workNo != null">work_no = #{workNo},</if>
+            <if test="password != null and password != ''">password = #{password},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM admin WHERE id = #{id}
+    </delete>
+
 </mapper>

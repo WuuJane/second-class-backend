@@ -88,7 +88,7 @@ public class ActivityServiceImpl implements ActivityService {
                 newStatus = "待报名";
             } else if ("活动结束".equals(currentStatus)) {
                 // 完结审核过了，活动生命周期彻底结束
-                newStatus = "已完结";
+                newStatus = "活动完结";
             } else {
                 throw new RuntimeException("当前状态不可审核");
             }
