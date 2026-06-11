@@ -50,9 +50,9 @@ public class Activity {
         if (now.isBefore(this.enrollStartTime)) {
             return "未开始报名";
         } else if (now.isAfter(this.enrollStartTime) && now.isBefore(this.enrollEndTime)) {
-            return "可报名";     // 💡 这里顺便帮你把原来的“待报名”改成了更直观的“可报名”
+            return "可报名";
         } else if (now.isAfter(this.enrollEndTime) && now.isBefore(this.startTime)) {
-            return "报名已结束";  // 处于报名截止到活动开始之间的尴尬期
+            return "报名已结束";
         } else if (now.isAfter(this.startTime) && now.isBefore(this.endTime)) {
             return "活动进行中";
         } else {
