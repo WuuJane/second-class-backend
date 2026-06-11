@@ -44,7 +44,7 @@ public class Activity {
             return this.activityStatus;
         }
 
-        // 2. 如果属于正常发布的活动，根据当前系统时间 (LocalDateTime) 动态计算
+        // 2. 如果属于正常发布的活动，根据当前系统时间 (LocalDateTime) 进行动态计算
         LocalDateTime now = LocalDateTime.now();
 
         if (now.isBefore(this.enrollStartTime)) {
