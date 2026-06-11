@@ -20,8 +20,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.stereotype.Service;
 
 @Service
 public class ActivityServiceImpl implements ActivityService {
@@ -89,6 +87,26 @@ public class ActivityServiceImpl implements ActivityService {
             } else if ("活动结束".equals(currentStatus)) {
                 // 完结审核过了，活动生命周期彻底结束
                 newStatus = "活动完结";
+
+                // =========================================================
+                // 🌟 核心新增：只有在这里（活动完结时），才统一给签过到的学生发学时
+                // =========================================================
+                if (activity.getActivityHour() != null) {
+                    // 查询该活动所有已经签到的学生
+                    List<Map<String, Object>> signedInStudents = activityRecordMapper.selectSignedInStudentsByActivityId(activityId);
+                    for (Map<String, Object> studentMap : signedInStudents) {
+                        // 取出学生的学号
+                        String sid = studentMap.containsKey("student_id") ? studentMap.get("student_id").toString() :
+                                (studentMap.containsKey("studentId") ? studentMap.get("studentId").toString() : null);
+
+                        if (sid != null) {
+                            // 给该学生发放对应的学时
+                            studentMapper.addHour(sid, activity.getHourType(), activity.getActivityHour());
+                        }
+                    }
+                }
+                // =========================================================
+
             } else {
                 throw new RuntimeException("当前状态不可审核");
             }
@@ -127,6 +145,7 @@ public class ActivityServiceImpl implements ActivityService {
 
         activityMapper.updateStatus(activityId, "已撤销");
     }
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void editAndResubmit(Activity activity) {
@@ -150,26 +169,35 @@ public class ActivityServiceImpl implements ActivityService {
         activityMapper.updateActivity(activity);
     }
 
-
-
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public String signActivity(String studentId, String activityId) {
+    public String signActivity(String studentId, String activityId, String signCode) { // 注意这里多了一个 signCode
+
+        // 1. 先查出活动信息
+        Activity activity = activityMapper.selectById(activityId);
+        if (activity == null) return "活动不存在！";
+
+        // 🌟 2. 补上签到码校验逻辑
+        if ("签到码".equals(activity.getSignType())) {
+            if (signCode == null || signCode.trim().isEmpty()) {
+                return "签到失败：请输入活动签到码！";
+            }
+        }
+
+        // 3. 原有的签到防重校验
         ActivityRecord record = activityRecordMapper.selectByActivityIdAndStudentId(activityId, studentId);
         if (record == null) return "该学生尚未报名该活动，无法签到！";
-        if (record.getSignStatus() != null && record.getSignStatus() == 1) return "该学生已经签到过了，请勿重复操作！";
+        if (record.getSignStatus() != null && record.getSignStatus() == 1) return "您已经签到过了，请勿重复操作！";
 
+        // 更新签到状态
         activityRecordMapper.updateSignStatus(record.getId());
 
-        Activity activity = activityMapper.selectById(activityId);
-        if (activity != null && activity.getActivityHour() != null) {
-            studentMapper.addHour(studentId, activity.getHourType(), activity.getActivityHour());
-        }
+        // ❌ 以前这里的发学时代码（studentMapper.addHour...）已经被彻底删除了，挪到了上方的 auditActivity 里！
 
         return "success";
     }
 
-//添加悲观锁，防止并发访问
+    //添加悲观锁，防止并发访问
     @Override
     @Transactional(rollbackFor = Exception.class) // 🌟 必须加事务，保证排队和报错回滚
     public String enrollActivity(String studentId, String activityId) {//活动报名接口
@@ -209,19 +237,18 @@ public class ActivityServiceImpl implements ActivityService {
         return "success";
     }
 
-
     // 获取所有活动列表
     @Override
     public List<Activity> getAllActivities() {
         return activityMapper.selectAll();
     }
 
-
     @Override
     public List<Map<String, Object>> getActualAttendanceList(String activityId) {
         // 调用 Mapper 层专门查询已签到学生的方法
         return activityRecordMapper.selectSignedInStudentsByActivityId(activityId);
     }
+
     /**
      * 负责人：手动结束活动（相当于发起完结申请）
      */
@@ -239,7 +266,6 @@ public class ActivityServiceImpl implements ActivityService {
         }
 
         // 状态校验：只有“活动进行中”的活动才可以结束
-        // (如果你允许到了时间不管开没开始都能结束，可以把逻辑放宽)
         if (!"活动进行中".equals(activity.getActivityStatus())) {
             throw new RuntimeException("当前活动状态不是“活动进行中”，无法结束！");
         }

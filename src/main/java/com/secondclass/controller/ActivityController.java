@@ -73,13 +73,15 @@ public ResultVO<Void> enroll(@RequestParam String studentId, @RequestParam Strin
     // 逻辑和学生扫码一模一样，我们单独拉一个接口是为了前端权限区分
     @PostMapping("/manual-sign")
     public ResultVO<Void> manualSign(@RequestParam String studentId, @RequestParam String activityId) {
-        String result = activityService.signActivity(studentId, activityId);
+        // 负责人强制签到不需要签到码，第三个参数直接传 null 占位即可
+        String result = activityService.signActivity(studentId, activityId, null);
         if ("success".equals(result)) {
-            return ResultVO.success(); // 签到成功且自动发学时了
+            return ResultVO.success();
         } else {
             return ResultVO.error(result);
         }
     }
+
 
     @PostMapping("/resubmit")
     public ResultVO<Void> resubmitActivity(@RequestBody Activity activity) {
@@ -117,15 +119,18 @@ public ResultVO<Void> enroll(@RequestParam String studentId, @RequestParam Strin
 
 
 // 学生扫码签到接口
-    @PostMapping("/sign")
-    public ResultVO<Void> sign(@RequestParam String studentId, @RequestParam String activityId) {
-        String result = activityService.signActivity(studentId, activityId);
-        if ("success".equals(result)) {
-            return ResultVO.success();
-        } else {
-            return ResultVO.error(result);
-        }
+@PostMapping("/sign")
+public ResultVO<Void> sign(@RequestParam String studentId,
+                           @RequestParam String activityId,
+                           @RequestParam(required = false) String signCode) {
+    // 把 signCode 一起传给业务层
+    String result = activityService.signActivity(studentId, activityId, signCode);
+    if ("success".equals(result)) {
+        return ResultVO.success();
+    } else {
+        return ResultVO.error(result);
     }
+}
 
     // 获取活动大厅所有活动列表
     @GetMapping("/list")

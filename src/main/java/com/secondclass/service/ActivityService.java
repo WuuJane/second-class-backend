@@ -17,7 +17,7 @@ public interface ActivityService {
     String enrollActivity(String studentId, String activityId);
 
     // 学生签到并结算学时
-    String signActivity(String studentId, String activityId);
+    String signActivity(String studentId, String activityId, String signCode);
 
     // 审核活动（isPass: true代表通过，false代表驳回）
     void auditActivity(String activityId, boolean isPass);
