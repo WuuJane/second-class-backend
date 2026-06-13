@@ -10,13 +10,13 @@
         INSERT INTO activity (
             activity_id, activity_name, department, host_unit, manager_id,
             auditor_id, activity_hour, hour_type, start_time, end_time,
-            sign_type, activity_status, create_time, activity_img,
+            sign_type, sign_code, activity_status, create_time, activity_img,
             location, capacity, enroll_start_time, enroll_end_time,
             manager_org_id, auditor_org_id
         ) VALUES (
                      #{activityId}, #{activityName}, #{department}, #{hostUnit}, #{managerId},
                      #{auditorId}, #{activityHour}, #{hourType}, #{startTime}, #{endTime},
-                     #{signType}, #{activityStatus}, NOW(), #{activityImg},
+                     #{signType}, #{signCode}, #{activityStatus}, NOW(), #{activityImg},
                      #{location}, #{capacity}, #{enrollStartTime}, #{enrollEndTime},
                      #{managerOrgId}, #{auditorOrgId}
                  )
@@ -37,6 +37,7 @@
         WHERE manager_id = #{managerId}
         ORDER BY create_time DESC
     </select>
+
     <update id="updateActivity" parameterType="com.secondclass.entity.Activity">
         UPDATE activity
         <set>
@@ -79,16 +80,22 @@
             <if test="activityStatus != null and activityStatus != ''">
                 activity_status = #{activityStatus},
             </if>
+            <if test="signType != null and signType != ''">
+                sign_type = #{signType},
+            </if>
+            <if test="signCode != null">
+                sign_code = #{signCode},
+            </if>
         </set>
         WHERE activity_id = #{activityId}
     </update>
+
     <update id="updateStatusToInProgress">
         UPDATE activity
         SET activity_status = '活动进行中'
         WHERE activity_status = '待报名'
           AND start_time &lt;= NOW()
     </update>
-
 
     <select id="getActivityById" resultType="com.secondclass.entity.Activity">
         SELECT * FROM activity WHERE activity_id = #{activityId}
@@ -118,4 +125,5 @@
     <select id="selectByIdForUpdate" resultType="com.secondclass.entity.Activity">
         SELECT * FROM activity WHERE activity_id = #{activityId} FOR UPDATE
     </select>
+
 </mapper>

@@ -29,9 +29,9 @@ public class Activity {
     private LocalDateTime enrollEndTime;   // 报名结束时间
     private Integer managerOrgId;    // 发起方的组织ID
     private Integer auditorOrgId;    // 动态绑定的审核组织ID
-
+    private String signCode;
     /**
-     * 🌟 核心修改：手动重写 getter 方法，实现基于时间的动态状态计算
+     * 手动重写 getter 方法，实现基于时间的动态状态计算
      * Spring Boot 返回 JSON 给前端时，会自动调用这个方法，从而拿到最实时的状态
      */
     public String getActivityStatus() {

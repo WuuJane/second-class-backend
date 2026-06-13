@@ -3,7 +3,18 @@
 <mapper namespace="com.secondclass.mapper.StudentMapper">
 
     <select id="selectById" resultType="com.secondclass.entity.Student">
-        SELECT * FROM student WHERE student_id = #{studentId}
+        SELECT
+            s.*,
+            -- 使用 COALESCE，如果该学院年级没配置，就默认给 15.0
+            COALESCE(cr.politics_req, 15.0) AS politicsReq,
+            COALESCE(cr.humanity_req, 15.0) AS humanityReq,
+            COALESCE(cr.innovation_req, 15.0) AS innovationReq,
+            COALESCE(cr.social_req, 15.0) AS socialReq
+        FROM student s
+                 -- 核心：通过所属学院和年级，左连接查询配置表
+                 LEFT JOIN credit_requirement cr
+                           ON s.student_department = cr.college AND s.grade = cr.grade
+        WHERE s.student_id = #{studentId}
     </select>
 
     <update id="addHour">

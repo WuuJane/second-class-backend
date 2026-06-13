@@ -26,4 +26,6 @@ public interface ActivityRecordMapper {
     // 🌟 新增功能：多表联查，查询某个活动的所有报名学生详细信息
     List<Map<String, Object>> selectStudentDetailsByActivityId(String activityId);
     List<Map<String, Object>> selectSignedInStudentsByActivityId(String activityId);
+    // 撤销签到，将签到状态改回 0
+    int updateSignStatusToZero(Integer id);
 }

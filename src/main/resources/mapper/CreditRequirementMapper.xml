@@ -2,9 +2,31 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.secondclass.mapper.CreditRequirementMapper">
 
+    <select id="selectAll" resultType="com.secondclass.entity.CreditRequirement">
+        SELECT * FROM credit_requirement ORDER BY grade DESC, id DESC
+    </select>
+
     <select id="selectByCollegeAndGrade" resultType="com.secondclass.entity.CreditRequirement">
         SELECT * FROM credit_requirement
         WHERE college = #{college} AND grade = #{grade}
     </select>
+
+    <insert id="insert">
+        INSERT INTO credit_requirement (college, grade, politics_req, humanity_req, innovation_req, social_req)
+        VALUES (#{college}, #{grade}, #{politicsReq}, #{humanityReq}, #{innovationReq}, #{socialReq})
+    </insert>
+
+    <update id="update">
+        UPDATE credit_requirement
+        SET politics_req = #{politicsReq},
+            humanity_req = #{humanityReq},
+            innovation_req = #{innovationReq},
+            social_req = #{socialReq}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM credit_requirement WHERE id = #{id}
+    </delete>
 
 </mapper>

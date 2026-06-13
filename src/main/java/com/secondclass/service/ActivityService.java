@@ -46,4 +46,7 @@ public interface ActivityService {
 
     // 获取学生已签到的历史活动记录
     List<Activity> getHistoryActivities(String studentId);
+    void managerAddStudent(String studentId, String activityId);
+    void manualSign(String studentId, String activityId);
+    void cancelSign(String studentId, String activityId);
 }
