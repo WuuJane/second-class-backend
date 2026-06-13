@@ -16,8 +16,16 @@ import com.secondclass.mapper.StudentMapper;
 import com.secondclass.mapper.SysOrganizationMapper;
 import com.secondclass.service.ActivityService;
 import com.secondclass.service.UserService;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.InputStream;
+import java.util.ArrayList;
+
+import com.secondclass.dto.ImportResultDTO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -69,7 +77,7 @@ public class ActivityServiceImpl implements ActivityService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void auditActivity(String activityId, boolean isPass) {
+    public void auditActivity(String activityId, boolean isPass, String rejectReason) {
         Activity activity = activityMapper.selectById(activityId);
         if (activity == null) throw new RuntimeException("活动不存在");
 
@@ -77,6 +85,8 @@ public class ActivityServiceImpl implements ActivityService {
         String newStatus = "被驳回"; // 默认只要是驳回，都退回给负责人修改
 
         if (isPass) {
+            // 通过时清除驳回原因
+            activityMapper.updateRejectReason(activityId, null);
             // 根据当前所处的阶段，推导下一个状态
             if ("等待初审".equals(currentStatus)) {
                 // 如果有终审机制，初审过了就是待终审
@@ -113,6 +123,11 @@ public class ActivityServiceImpl implements ActivityService {
         }
 
         activityMapper.updateStatus(activityId, newStatus);
+
+        // 驳回时保存驳回原因
+        if (!isPass && rejectReason != null && !rejectReason.trim().isEmpty()) {
+            activityMapper.updateRejectReason(activityId, rejectReason.trim());
+        }
     }
 
     @Override
@@ -299,10 +314,19 @@ public class ActivityServiceImpl implements ActivityService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void managerAddStudent(String studentId, String activityId) {
-        // 负责人特权：直接查重后插入，无视时间和名额限制
+        // 校验学号真实性
+        if (studentMapper.selectById(studentId) == null) {
+            throw new RuntimeException("学号 " + studentId + " 不存在，请核对后重新输入！");
+        }
+        // 查重
         int isEnrolled = activityRecordMapper.checkEnrolled(activityId, studentId);
         if (isEnrolled > 0) {
             throw new RuntimeException("该学生已经在名单中了！");
+        }
+        // 校验活动是否存在
+        Activity activity = activityMapper.selectById(activityId);
+        if (activity == null) {
+            throw new RuntimeException("活动不存在！");
         }
         ActivityRecord record = new ActivityRecord();
         record.setActivityId(activityId);
@@ -345,5 +369,63 @@ public class ActivityServiceImpl implements ActivityService {
         if (activity != null && "活动完结".equals(activity.getActivityStatus()) && activity.getActivityHour() != null) {
             studentMapper.addHour(studentId, activity.getHourType(), activity.getActivityHour().negate());
         }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public ImportResultDTO importStudentsFromExcel(MultipartFile file, String activityId) {
+        ImportResultDTO result = new ImportResultDTO();
+        List<String> errors = new ArrayList<>();
+
+        // 校验活动
+        Activity activity = activityMapper.selectById(activityId);
+        if (activity == null) {
+            result.getErrors().add("活动不存在！");
+            result.setFail(1);
+            return result;
+        }
+
+        try (InputStream is = file.getInputStream(); Workbook workbook = new XSSFWorkbook(is)) {
+            Sheet sheet = workbook.getSheetAt(0);
+            int total = 0, success = 0;
+
+            for (int i = 0; i <= sheet.getLastRowNum(); i++) {
+                Row row = sheet.getRow(i);
+                if (row == null) continue;
+
+                // 读取第一列学号
+                Cell cell = row.getCell(0);
+                if (cell == null) continue;
+
+                String studentId;
+                if (cell.getCellType() == CellType.NUMERIC) {
+                    studentId = String.valueOf((long) cell.getNumericCellValue());
+                } else if (cell.getCellType() == CellType.STRING) {
+                    studentId = cell.getStringCellValue().trim();
+                } else {
+                    continue;
+                }
+
+                if (studentId.isEmpty()) continue;
+                total++;
+
+                try {
+                    managerAddStudent(studentId, activityId);
+                    success++;
+                } catch (RuntimeException e) {
+                    errors.add("第" + (i + 1) + "行 " + studentId + ": " + e.getMessage());
+                }
+            }
+
+            result.setTotal(total);
+            result.setSuccess(success);
+            result.setFail(total - success);
+            result.setErrors(errors);
+        } catch (Exception e) {
+            result.getErrors().add("文件解析失败：" + e.getMessage());
+            result.setFail(result.getTotal() + 1);
+        }
+
+        return result;
     }
 }

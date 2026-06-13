@@ -1,6 +1,7 @@
 package com.secondclass.controller;
 
 import com.secondclass.common.ResultVO;
+import com.secondclass.dto.ImportResultDTO;
 import com.secondclass.entity.Admin;
 import com.secondclass.entity.Student;
 import com.secondclass.entity.SysOrganization;
@@ -8,6 +9,7 @@ import com.secondclass.entity.TUser;
 import com.secondclass.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -227,12 +229,38 @@ public class UserController {
     @DeleteMapping("/student/{id}")
     public ResultVO<Void> deleteStudent(@PathVariable String id) {
         try {
-            userService.deleteStudent(id); // 确保你的 userService 实现了这个方法
+            userService.deleteStudent(id);
             return ResultVO.success();
         } catch (RuntimeException e) {
             return ResultVO.error(e.getMessage());
         }
     }
+
+    /**
+     * 管理员查看学生详情（含密码）
+     */
+    @GetMapping("/student/detail/{id}")
+    public ResultVO<Student> getStudentDetail(@PathVariable String id) {
+        Student student = userService.getStudentById(id);
+        if (student == null) {
+            return ResultVO.error("学生不存在");
+        }
+        return ResultVO.success(student);
+    }
+
+    /**
+     * 管理员重置学生密码
+     */
+    @PutMapping("/student/reset-password/{id}")
+    public ResultVO<Void> resetStudentPassword(@PathVariable String id) {
+        try {
+            userService.resetStudentPassword(id);
+            return ResultVO.success();
+        } catch (RuntimeException e) {
+            return ResultVO.error(e.getMessage());
+        }
+    }
+
     // ==================== 组织机构 ====================
 
     /**
@@ -284,5 +312,15 @@ public class UserController {
         } catch (RuntimeException e) {
             return ResultVO.error(e.getMessage());
         }
+    }
+
+    // Excel 批量导入学生
+    @PostMapping("/student/import")
+    public ResultVO<ImportResultDTO> importStudents(@RequestParam MultipartFile file) {
+        if (file.isEmpty()) {
+            return ResultVO.error("请上传 Excel 文件");
+        }
+        ImportResultDTO result = userService.importStudentsFromExcel(file);
+        return ResultVO.success(result);
     }
 }

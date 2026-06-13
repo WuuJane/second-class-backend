@@ -30,6 +30,18 @@ public class Activity {
     private Integer managerOrgId;    // 发起方的组织ID
     private Integer auditorOrgId;    // 动态绑定的审核组织ID
     private String signCode;
+    private String enrollColleges;   // 参与学院范围（逗号分隔，NULL表示全校）
+    private String rejectReason;     // 驳回原因
+
+    /**
+     * 获取参与学院范围显示值，NULL或空返回"全学院"
+     */
+    public String getEnrollColleges() {
+        if (this.enrollColleges == null || this.enrollColleges.trim().isEmpty()) {
+            return "全学院";
+        }
+        return this.enrollColleges;
+    }
     /**
      * 手动重写 getter 方法，实现基于时间的动态状态计算
      * Spring Boot 返回 JSON 给前端时，会自动调用这个方法，从而拿到最实时的状态

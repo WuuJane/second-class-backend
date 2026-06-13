@@ -50,15 +50,15 @@ public class AuditorController {
     // 审批接口（通过）
     @PostMapping("/approve")
     public ResultVO<Void> approve(@RequestParam String activityId) {
-        // 使用 ActivityService 的布尔型审核方法：true 表示通过
-        activityService.auditActivity(activityId, true);
+        activityService.auditActivity(activityId, true, null);
         return ResultVO.success();
     }
 
     // 驳回接口
     @PostMapping("/reject")
-    public ResultVO<Void> reject(@RequestParam String activityId) {
-        activityService.auditActivity(activityId, false);
+    public ResultVO<Void> reject(@RequestParam String activityId,
+                                 @RequestParam(required = false) String rejectReason) {
+        activityService.auditActivity(activityId, false, rejectReason);
         return ResultVO.success();
     }
 
@@ -66,8 +66,7 @@ public class AuditorController {
     @PostMapping("/settle")
     public ResultVO<Void> settle(@RequestParam String activityId) {
         try {
-            // reuse auditActivity(true) to mark final approval of an "活动结束" -> "活动完结"
-            activityService.auditActivity(activityId, true);
+            activityService.auditActivity(activityId, true, null);
             return ResultVO.success();
         } catch (Exception e) {
             return ResultVO.error(e.getMessage());

@@ -36,4 +36,7 @@ public interface ActivityMapper {
 
     //悲观锁查询：查询活动信息并锁定该行数据，防止并发修改
     Activity selectByIdForUpdate(String activityId);
+
+    // 更新驳回原因
+    int updateRejectReason(@Param("activityId") String activityId, @Param("rejectReason") String rejectReason);
 }

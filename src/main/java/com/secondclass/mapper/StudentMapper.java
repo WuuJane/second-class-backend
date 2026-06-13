@@ -30,4 +30,7 @@ public interface StudentMapper {
      * 根据学号/ID删除学生
      */
     int deleteById(String id);
+
+    // 管理员功能：重置密码
+    int updatePassword(@Param("studentId") String studentId, @Param("password") String password);
 }

@@ -1,9 +1,11 @@
 package com.secondclass.service;
 
+import com.secondclass.dto.ImportResultDTO;
 import com.secondclass.entity.Admin;
 import com.secondclass.entity.SysOrganization;
 import com.secondclass.entity.TUser;
 import com.secondclass.entity.Student;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -35,4 +37,6 @@ public interface UserService {
     void createStudent(Student student);
     void updateStudent(Student student);
     void deleteStudent(String id);
+    void resetStudentPassword(String studentId);
+    ImportResultDTO importStudentsFromExcel(MultipartFile file);
 }

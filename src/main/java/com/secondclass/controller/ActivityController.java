@@ -2,10 +2,12 @@ package com.secondclass.controller;
 
 import com.secondclass.common.ResultVO;
 import com.secondclass.dto.ActivityCreateDTO;
+import com.secondclass.dto.ImportResultDTO;
 import com.secondclass.entity.Activity;
 import com.secondclass.service.ActivityService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
@@ -20,8 +22,12 @@ public class ActivityController {
     // 发起活动
     @PostMapping("/create")
     public ResultVO<Void> createActivity(@RequestBody ActivityCreateDTO dto) {
-        activityService.createActivity(dto);
-        return ResultVO.success();
+        try {
+            activityService.createActivity(dto);
+            return ResultVO.success();
+        } catch (RuntimeException e) {
+            return ResultVO.error(e.getMessage());
+        }
     }
 
     // 学生报名活动接口
@@ -37,9 +43,10 @@ public class ActivityController {
 
     // 审核活动
     @PostMapping("/audit")
-    public ResultVO<Void> audit(@RequestParam String activityId, @RequestParam boolean isPass) {
+    public ResultVO<Void> audit(@RequestParam String activityId, @RequestParam boolean isPass,
+                                @RequestParam(required = false) String rejectReason) {
         try {
-            activityService.auditActivity(activityId, isPass);
+            activityService.auditActivity(activityId, isPass, rejectReason);
             return ResultVO.success();
         } catch (Exception e) {
             return ResultVO.error(e.getMessage());
@@ -192,5 +199,16 @@ public class ActivityController {
     public ResultVO<List<Activity>> getHistoryActivities(@RequestParam String studentId) {
         List<Activity> list = activityService.getHistoryActivities(studentId);
         return ResultVO.success(list);
+    }
+
+    // Excel 批量导入学生名单
+    @PostMapping("/import-students")
+    public ResultVO<ImportResultDTO> importStudents(@RequestParam MultipartFile file,
+                                                     @RequestParam String activityId) {
+        if (file.isEmpty()) {
+            return ResultVO.error("请上传 Excel 文件");
+        }
+        ImportResultDTO result = activityService.importStudentsFromExcel(file, activityId);
+        return ResultVO.success(result);
     }
 }

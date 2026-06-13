@@ -1,7 +1,10 @@
 package com.secondclass.service;
 
 import com.secondclass.dto.ActivityCreateDTO;
+import com.secondclass.dto.ImportResultDTO;
 import com.secondclass.entity.Activity;
+import org.springframework.web.multipart.MultipartFile;
+
 import java.util.List;
 import java.util.Map;
 
@@ -19,8 +22,8 @@ public interface ActivityService {
     // 学生签到并结算学时
     String signActivity(String studentId, String activityId, String signCode);
 
-    // 审核活动（isPass: true代表通过，false代表驳回）
-    void auditActivity(String activityId, boolean isPass);
+    // 审核活动（isPass: true代表通过，false代表驳回，rejectReason为驳回原因）
+    void auditActivity(String activityId, boolean isPass, String rejectReason);
 
     // 获取负责人自己发布的活动
     List<Activity> getMyManageActivities(String managerId);
@@ -49,4 +52,7 @@ public interface ActivityService {
     void managerAddStudent(String studentId, String activityId);
     void manualSign(String studentId, String activityId);
     void cancelSign(String studentId, String activityId);
+
+    // Excel 导入学生名单
+    ImportResultDTO importStudentsFromExcel(MultipartFile file, String activityId);
 }
