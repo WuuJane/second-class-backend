@@ -23,4 +23,6 @@ public class ActivityCreateDTO {
     private LocalDateTime enrollStartTime; // 报名开始时间
     private LocalDateTime enrollEndTime;   // 报名结束时间
     private String enrollColleges;         // 参与学院范围（逗号分隔）
+    private String signCode;               // 签到码（6位数字）
+    private String rejectReason;           // 驳回原因
 }

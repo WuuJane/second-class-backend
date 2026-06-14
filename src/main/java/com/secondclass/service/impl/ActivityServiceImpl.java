@@ -8,6 +8,7 @@ import java.util.UUID;
 import com.secondclass.entity.ActivityRecord;
 import com.secondclass.dto.ActivityCreateDTO;
 import com.secondclass.entity.Activity;
+import com.secondclass.entity.Student;
 import com.secondclass.entity.TUser;
 import com.secondclass.entity.SysOrganization;
 import com.secondclass.mapper.ActivityMapper;
@@ -257,6 +258,26 @@ public class ActivityServiceImpl implements ActivityService {
             throw new RuntimeException("手慢了，活动名额已满！");
         }
 
+        // 4.5 🔥 校验学生学院是否在活动参与范围内
+        Student student = studentMapper.selectById(studentId);
+        if (student != null) {
+            String enrollColleges = activity.getEnrollColleges();
+            if (!"全学院".equals(enrollColleges)) {
+                String studentDept = student.getStudentDepartment();
+                boolean inScope = false;
+                for (String college : enrollColleges.split(",")) {
+                    if (college.trim().equals(studentDept)) {
+                        inScope = true;
+                        break;
+                    }
+                }
+                if (!inScope) {
+                    throw new RuntimeException("你的学院（" + studentDept
+                        + "）不在本次活动参与范围内！活动限学院：" + enrollColleges);
+                }
+            }
+        }
+
         // 5. 插入报名记录
         ActivityRecord record = new ActivityRecord();
         record.setActivityId(activityId);
@@ -336,7 +357,8 @@ public class ActivityServiceImpl implements ActivityService {
     @Transactional(rollbackFor = Exception.class)
     public void managerAddStudent(String studentId, String activityId) {
         // 校验学号真实性
-        if (studentMapper.selectById(studentId) == null) {
+        Student student = studentMapper.selectById(studentId);
+        if (student == null) {
             throw new RuntimeException("学号 " + studentId + " 不存在，请核对后重新输入！");
         }
         // 查重
@@ -348,6 +370,22 @@ public class ActivityServiceImpl implements ActivityService {
         Activity activity = activityMapper.selectById(activityId);
         if (activity == null) {
             throw new RuntimeException("活动不存在！");
+        }
+        // 🔥 校验学生学院是否在活动参与范围内
+        String enrollColleges = activity.getEnrollColleges();
+        if (!"全学院".equals(enrollColleges)) {
+            String studentDept = student.getStudentDepartment();
+            boolean inScope = false;
+            for (String college : enrollColleges.split(",")) {
+                if (college.trim().equals(studentDept)) {
+                    inScope = true;
+                    break;
+                }
+            }
+            if (!inScope) {
+                throw new RuntimeException("学号 " + studentId + " 所属学院（" + studentDept
+                    + "）不在本次活动参与范围内！活动限学院：" + enrollColleges);
+            }
         }
         ActivityRecord record = new ActivityRecord();
         record.setActivityId(activityId);
