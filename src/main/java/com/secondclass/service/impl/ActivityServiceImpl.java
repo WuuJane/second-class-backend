@@ -58,7 +58,15 @@ public class ActivityServiceImpl implements ActivityService {
 
         TUser manager = userService.getUserById(activity.getManagerId());
 
-        if (manager != null && manager.getOrgId() != null) {
+        // 校验：负责人只能发布自己所属学院的活动
+        if (manager == null) {
+            throw new RuntimeException("发布活动失败：负责人信息不存在！");
+        }
+        if (manager.getDepartment() != null && !manager.getDepartment().equals(activity.getDepartment())) {
+            throw new RuntimeException("越权操作：您只能发布「" + manager.getDepartment() + "」的活动，不能发布其他学院的活动！");
+        }
+
+        if (manager.getOrgId() != null) {
             activity.setManagerOrgId(manager.getOrgId());
             SysOrganization org = sysOrganizationMapper.selectById(manager.getOrgId());
             if (org != null && org.getAuditorOrgId() != null) {
@@ -77,19 +85,32 @@ public class ActivityServiceImpl implements ActivityService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void auditActivity(String activityId, boolean isPass, String rejectReason) {
+    public void auditActivity(String activityId, boolean isPass, String rejectReason, String auditorRole) {
         Activity activity = activityMapper.selectById(activityId);
         if (activity == null) throw new RuntimeException("活动不存在");
 
         String currentStatus = activity.getActivityStatus();
         String newStatus = "被驳回"; // 默认只要是驳回，都退回给负责人修改
 
+        // 角色与审核阶段匹配校验
+        if (auditorRole != null && !auditorRole.isEmpty()) {
+            if ("初审审核人".equals(auditorRole) && !"等待初审".equals(currentStatus)) {
+                throw new RuntimeException("初审审核人只能审核「等待初审」状态的活动！");
+            }
+            if ("终审审核人".equals(auditorRole) && !"待终审".equals(currentStatus)) {
+                throw new RuntimeException("终审审核人只能审核「待终审」状态的活动！");
+            }
+            if ("完结审核人".equals(auditorRole) && !"活动结束".equals(currentStatus)) {
+                throw new RuntimeException("完结审核人只能审核「活动结束」状态的活动！");
+            }
+        }
+
         if (isPass) {
             // 通过时清除驳回原因
             activityMapper.updateRejectReason(activityId, null);
             // 根据当前所处的阶段，推导下一个状态
             if ("等待初审".equals(currentStatus)) {
-                // 如果有终审机制，初审过了就是待终审
+                // 初审过了 → 待终审
                 newStatus = "待终审";
             } else if ("待终审".equals(currentStatus)) {
                 // 终审过了，才正式向学生开放报名

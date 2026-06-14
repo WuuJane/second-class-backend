@@ -52,6 +52,7 @@ public class Activity {
                 "待终审".equals(this.activityStatus) ||
                 "被驳回".equals(this.activityStatus) ||
                 "已撤销".equals(this.activityStatus) ||
+                "活动结束".equals(this.activityStatus) ||
                 "活动完结".equals(this.activityStatus)) {
             return this.activityStatus;
         }

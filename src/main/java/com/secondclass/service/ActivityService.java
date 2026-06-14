@@ -22,8 +22,8 @@ public interface ActivityService {
     // 学生签到并结算学时
     String signActivity(String studentId, String activityId, String signCode);
 
-    // 审核活动（isPass: true代表通过，false代表驳回，rejectReason为驳回原因）
-    void auditActivity(String activityId, boolean isPass, String rejectReason);
+    // 审核活动（isPass: true代表通过，false代表驳回，rejectReason为驳回原因，auditorRole用于校验审核人与阶段的匹配）
+    void auditActivity(String activityId, boolean isPass, String rejectReason, String auditorRole);
 
     // 获取负责人自己发布的活动
     List<Activity> getMyManageActivities(String managerId);

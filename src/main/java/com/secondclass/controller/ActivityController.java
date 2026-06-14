@@ -44,9 +44,10 @@ public class ActivityController {
     // 审核活动
     @PostMapping("/audit")
     public ResultVO<Void> audit(@RequestParam String activityId, @RequestParam boolean isPass,
-                                @RequestParam(required = false) String rejectReason) {
+                                @RequestParam(required = false) String rejectReason,
+                                @RequestParam(required = false) String auditorRole) {
         try {
-            activityService.auditActivity(activityId, isPass, rejectReason);
+            activityService.auditActivity(activityId, isPass, rejectReason, auditorRole);
             return ResultVO.success();
         } catch (Exception e) {
             return ResultVO.error(e.getMessage());
